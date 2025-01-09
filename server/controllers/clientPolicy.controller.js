@@ -120,8 +120,10 @@ const sendQuotationMail = async ({ to, clientPolicyId, clientId, policyId, polic
     });
 
     console.log(a);
-    const emailTemplate = fs.readFileSync('./assets/quotationEmailTemplate.ejs', 'utf-8');
-    for (let i = 0; i < to.length; i++) {    
+    const filePath = path.join(__dirname, 'assets', 'quotationEmailTemplate.ejs');
+    const emailTemplate = fs.readFileSync(filePath, 'utf-8');
+    // const emailTemplate = fs.readFileSync('./assets/quotationEmailTemplate.ejs', 'utf-8');
+    for (let i = 0; i < to.length; i++) {
         const emailContent = ejs.render(emailTemplate, {
             formLink: `${process.env.FRONT_END_URL}/companyForm/${clientId}/${clientPolicyId}/${to[i]._id}`,
             policyType: policyType,
