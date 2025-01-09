@@ -136,7 +136,7 @@ const EmployeeTable = ({ employeesData, onRemoveAccess }) => {
                                     }</div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${employee.status === 'active'
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${employee.status?.toLowerCase() === 'active'
                                         ? 'bg-green-100 text-green-800'
                                         : 'bg-red-100 text-red-600'
                                         }`}>

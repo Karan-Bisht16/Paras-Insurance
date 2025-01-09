@@ -50,11 +50,11 @@ const EmployeeManagement = () => {
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Employee Management</h1>
-                {condenseClientInfo.role === 'superadmin'
+                {condenseClientInfo.role === 'SuperAdmin'
                     &&
                     <Button
                         onClick={() => setShowForm(true)}
-                        className="!text-white !bg-gray-900 hover:opacity-95"
+                        className="!text-white !bg-gray-900 !flex !justify-center !items-center !gap-6 hover:opacity-95"
                     >
                         <Add />
                         Add New Employee

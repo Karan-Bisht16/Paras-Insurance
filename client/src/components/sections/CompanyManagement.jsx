@@ -4,6 +4,7 @@ import { addCompanyPolicy, createCompany, deleteCompany, fetchAllCompanies, remo
 import CompanyTable from './companies/CompanyTable';
 import CompanyForm from './companies/CompanyForm';
 import CompanyPolicyForm from './companies/CompanyPolicyForm';
+import { Button } from '@mui/material';
 
 const CompanyManagement = () => {
     const [showForm, setShowForm] = useState(false);
@@ -73,13 +74,13 @@ const CompanyManagement = () => {
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Company Management</h1>
-                <button
+                <Button
                     onClick={() => setShowForm(true)}
-                    className="text-white bg-gray-900 px-4 py-2 rounded-lg flex items-center gap-2 hover:opacity-95"
+                    className="!text-white !bg-gray-900 !flex !justify-center !items-center !gap-6 hover:opacity-95"
                 >
                     <Add />
                     Add New Company
-                </button>
+                </Button>
             </div>
 
             <div className="bg-white rounded-lg shadow">

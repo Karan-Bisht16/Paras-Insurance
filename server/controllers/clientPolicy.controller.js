@@ -106,6 +106,7 @@ const addAdditionalClientData = async (clientId, formData) => {
 }
 
 const sendQuotationMail = async ({ to, clientPolicyId, clientId, policyId, policyType }) => {
+    console.log(to);
     const a = await CombinedQuotation.create({
         clientPolicyId: clientPolicyId,
         clientId: clientId,

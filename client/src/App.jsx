@@ -17,6 +17,7 @@ import ClientPolicies from './pages/ClientPolicies.page';
 import FileViewer from './pages/FileViewer.page';
 import ResetPassword from './pages/ResetPassword.page';
 import PageNotFound from './pages/PageNotFound.page';
+import CompanyForm from './pages/CompanyForm.page';
 // importing utils
 import useFetchClient from './utils/useFetchClient';
 import GuestRoute from './utils/GuestRoute';
@@ -29,7 +30,6 @@ import Footer from './components/Footer';
 import SnackBar from './components/subcomponents/SnackBar';
 import ConfirmationDialog from './components/subcomponents/ConfirmationDialog';
 import ProtectedRoute from './utils/ProtectedRoute';
-import CompanyForm from './pages/CompanyForm.page';
 
 const App = () => {
     const { loading, condenseClientInfo } = useFetchClient();
@@ -68,7 +68,7 @@ const App = () => {
                 />
                 <Route
                     path='/insuranceForm'
-                    element={<ProtectedRoute Component={InsuranceForm} user={condenseClientInfo} />}
+                    element={<div><InsuranceForm /><Footer /></div>}
                 />
                 <Route
                     path='/generalInsurance/:id'

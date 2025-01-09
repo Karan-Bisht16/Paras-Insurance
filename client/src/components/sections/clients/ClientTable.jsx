@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Tooltip } from '@mui/material';
+import { Button, Tooltip } from '@mui/material';
 import { Edit, Delete, FilterAltOutlined, PersonAddAlt1, SearchOutlined } from '@mui/icons-material';
 
 const ClientTable = ({ clients }) => {
@@ -78,10 +78,10 @@ const ClientTable = ({ clients }) => {
                         <option value="FEMALE">Female</option>
                     </select>
                     <FilterAltOutlined className="h-4 w-4" />
-                    <button className="px-3 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center space-x-1">
+                    <Button className="!text-white !bg-gray-900 !flex !justify-center !items-center !gap-2 hover:opacity-95">
                         <PersonAddAlt1 className="h-4 w-4" />
                         <span>Add Client</span>
-                    </button>
+                    </Button>
                 </div>
             </div>
             <div className="overflow-x-auto">

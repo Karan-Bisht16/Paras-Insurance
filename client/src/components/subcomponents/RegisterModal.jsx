@@ -11,7 +11,7 @@ const RegisterModal = ({ isOpen, onClose, onSubmit }) => {
     if (!isOpen) return null;
 
     return (
-        <div className='fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center'>
+        <div className='fixed !z-[1000] inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center'>
             <div className='bg-white p-8 rounded-lg shadow-xl w-96 sm:w-[400px]'>
                 <h2 className='text-xl text-center font-normal mb-4'>Set a password to <span className='text=2xl font-bold'>secure</span>  your account</h2>
                 

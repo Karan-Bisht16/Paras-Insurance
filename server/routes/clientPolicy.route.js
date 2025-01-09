@@ -6,9 +6,9 @@ import upload from '../middleware/multer.middleware.js';
 const router = express.Router();
 
 // create
-router.post('/createClientPolicy', auth, createClientPolicy);
+router.post('/createClientPolicy', createClientPolicy);
 // read
-router.get('/fetchClientPolicy', auth, fetchClientPolicy);
+router.get('/fetchClientPolicy', fetchClientPolicy);
 router.get('/fecthAllUnassigned', auth, fecthAllUnassignedPolicies);
 router.get('/fecthAllAssigned', auth, fecthAllAssignedPolicies);
 router.get('/countAllAssigned', auth, countAllAssignedPolicies);
