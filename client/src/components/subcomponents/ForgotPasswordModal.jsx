@@ -18,7 +18,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, modalText, showLinearProgress, m
             className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center"
         >
             <div
-                onClick={(e) => e.stopPropagation()}
+                onClick={(event) => event.stopPropagation()}
                 className="fixed bg-white p-8 pb-16 rounded-lg shadow-xl w-96 sm:w-[400px] z-10"
             >
                 <div className='mb-4'>
@@ -32,7 +32,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, modalText, showLinearProgress, m
                         </label>
                         <input
                             type="email" id="email" required disabled={modalFieldIsDisabled}
-                            value={email} onChange={(e) => setEmail(e.target.value)}
+                            value={email} onChange={(event) => setEmail(event.target.value)}
                             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
                     </div>

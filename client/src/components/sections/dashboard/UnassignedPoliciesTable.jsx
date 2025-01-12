@@ -1,17 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Checkbox, Tooltip } from '@mui/material';
-import { DoneAllOutlined, OpenInNew, PostAddOutlined, SearchOutlined, Send, Upload, Visibility } from '@mui/icons-material';
+import { DoneAllOutlined, OpenInNew, PostAddOutlined, SearchOutlined, Upload, Visibility } from '@mui/icons-material';
 import Spreadsheet from "react-spreadsheet";
 import * as XLSX from 'xlsx';
 // importing api end-points
-import { addAvailableCompanyPolicies } from '../../../api';
+import { sendCombinedQuotation } from '../../../api';
+// importing contexts
+import { SnackBarContext } from '../../../contexts/SnackBar.context';
 // importing components
 import { ScrollArea } from '../../subcomponents/ScrollArea';
 import PolicyDetailModal from '../../subcomponents/PolicyDetailModal';
 // importing helper functions
 import { toFormattedDate } from '../../../utils/helperFunctions';
 
-const DashboardTable = ({ unassignedPolicies, onSendCompanyPolicies, onAssignPolicy, reload }) => {
+const UnassignedPoliciesTable = ({ unassignedPolicies, onAssignPolicy, reload }) => {
+    const { setSnackbarState, setSnackbarValue } = useContext(SnackBarContext);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -22,97 +25,6 @@ const DashboardTable = ({ unassignedPolicies, onSendCompanyPolicies, onAssignPol
     const prevPage = () => {
         setCurrentPage(prev => Math.max(prev - 1, 1));
     };
-
-    const handleUploadExcel = () => {
-        document.getElementById(`excelUpload`)?.click();
-    }
-
-    const [excelData, setData] = useState([]);
-    const handleFileUpload = (event) => {
-        const file = event.target.files[0];
-        const reader = new FileReader();
-
-        reader.onload = (event) => {
-            const workbook = XLSX.read(event.target.result, { type: 'binary' });
-            const sheetName = workbook.SheetNames[0];
-            const sheet = workbook.Sheets[sheetName];
-
-            const sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-            const formattedData = sheetData.map((row) =>
-                row.map((cell) => ({
-                    value: cell || '',
-                    readOnly: true
-                }))
-            );
-
-            setData(formattedData);
-        };
-        reader.readAsBinaryString(file);
-        document.getElementById(`excelUploadFileName`).textContent = file.name
-    }
-
-    const [excelModal, setExcelModal] = useState(false);
-    const [policyIdForExcel, setPolicyIdForExcel] = useState('');
-    const [isCompanyPolicySelected, setIsCompanyPolicySelected] = useState(false);
-    const [selectedCompanyPolicies, setSelectedCompanyPolicies] = useState([]);
-    function transformData(inputArray) {
-        if (inputArray[0].length === 0) {
-            inputArray.shift();
-        }
-        let transformedArray = [];
-
-        let headerRow = inputArray[0].map(item => ({
-            value: item || "",
-            readOnly: true
-        }));
-        transformedArray.push(headerRow);
-
-        inputArray.slice(1).forEach(row => {
-            let transformedRow = row.map(item => ({
-                value: item || "",
-                readOnly: true
-            }));
-            transformedArray.push(transformedRow);
-        });
-
-        return transformedArray;
-    }
-    const selectCompanyPolicies = (quotation) => {
-        setSelectedCompanyPolicies(transformData(quotation));
-        setIsCompanyPolicySelected(true);
-    }
-    const closeCompanyPolicies = () => {
-        setSelectedCompanyPolicies([]);
-        setIsCompanyPolicySelected(false);
-    }
-    const handleDownloadExcel = () => {
-        const worksheetData = selectedCompanyPolicies.map((row) =>
-            Array.isArray(row) ? row.map((cell) => (cell.value ? cell.value : cell)) : row
-        );
-        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-        XLSX.writeFile(workbook, "Quotation.xlsx");
-    };
-    const handleExcelModalOpen = (policyId) => {
-        setPolicyIdForExcel(policyId);
-        setExcelModal(true);
-    }
-    const handleExcelModalClose = () => {
-        setExcelModal(false);
-        setData([]);
-    }
-    const handleSendExcel = async () => {
-        try {
-            const { data, status } = await addAvailableCompanyPolicies({ policyIdForExcel, excelData });
-            if (status === 200) {
-                handleExcelModalClose();
-                reload();
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    }
 
     const filteredUnassignedPolicies = useMemo(() => {
         return unassignedPolicies.filter(unassignedPolicy => {
@@ -137,6 +49,122 @@ const DashboardTable = ({ unassignedPolicies, onSendCompanyPolicies, onAssignPol
     const handleSelectPolicy = (policyData) => {
         setSelectedPolicy(policyData);
         setIsPolicySelected(true);
+    };
+
+    const handleUploadExcel = () => {
+        document.getElementById(`excelUpload`)?.click();
+    }
+
+    const [combinedQuotationData, setCombinedQuotationData] = useState([]);
+    const handleFileUpload = (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = (event) => {
+            const workbook = XLSX.read(event.target.result, { type: 'binary' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+
+            const sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+            const formattedData = sheetData.map((row) =>
+                row.map((cell) => ({
+                    value: cell || '',
+                    readOnly: true
+                }))
+            );
+
+            setCombinedQuotationData(formattedData);
+        };
+        reader.readAsBinaryString(file);
+        document.getElementById(`excelUploadFileName`).textContent = file.name
+    }
+
+    // const [selectedCompanyPolicies, setSelectedCompanyPolicies] = useState([]);
+    // const transformData = (inputArray) => {
+    //     if (inputArray[0].length === 0) {
+    //         inputArray.shift();
+    //     }
+    //     let transformedArray = [];
+    //     let headerRow = inputArray[0].map(item => ({
+    //         value: item || "",
+    //         readOnly: true
+    //     }));
+    //     transformedArray.push(headerRow);
+    //     inputArray.slice(1).forEach(row => {
+    //         let transformedRow = row.map(item => ({
+    //             value: item || "",
+    //             readOnly: true
+    //         }));
+    //         transformedArray.push(transformedRow);
+    //     });
+    //     return transformedArray;
+    // }
+    // const selectCombinedQuotation = (quotation) => {
+    // setSelectedCompanyPolicies(transformData(quotation));
+    // setIsCombinedQuotationSelected(true);
+    // }
+    // const closeCompanyPolicies = () => {
+    //     setSelectedCompanyPolicies([]);
+    //     setIsCombinedQuotationSelected(false);
+    // }
+    // const handleDownloadExcel = () => {
+    //     const worksheetData = selectedCompanyPolicies.map((row) =>
+    //         Array.isArray(row) ? row.map((cell) => (cell.value ? cell.value : cell)) : row
+    //     );
+    //     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    //     const workbook = XLSX.utils.book_new();
+    //     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    //     XLSX.writeFile(workbook, "Quotation.xlsx");
+    // };
+    // {isCombinedQuotationSelected &&
+    //     <div className='fixed inset-0 bg-black/10 !z-[1000] flex justify-center items-center' onClick={closeCompanyPolicies}>
+    //         <div onClick={(event) => event.stopPropagation()} className='bg-white max-w-[75vw] max-h-[75vh] rounded-lg'>
+    //             <div className='px-6 py-4 flex justify-between items-center'>
+    //                 <h2 className='text-2xl font-bold mb-2'>Quotation(s)</h2>
+    //                 {/* <Close onClick={closeCompanyPolicies} className='cursor-pointer' /> */}
+    //             </div>
+    //             <Divider />
+    //             <div className='mx-6 mt-3 mb-4'>
+    //                 <Button
+    //                     type='button'
+    //                     onClick={handleDownloadExcel}
+    //                     className='!flex !items-center !gap-2 !bg-gray-900 !text-white float-right'
+    //                 >
+    //                     Download Excel
+    //                     <Download className='!size-4' />
+    //                 </Button>
+    //                 <br />
+    //                 <ScrollArea className='w-full mt-6'>
+    //                     <div>
+    //                         <Spreadsheet data={selectedCompanyPolicies} />
+    //                     </div>
+    //                 </ScrollArea>
+    //             </div>
+    //         </div>
+    //     </div>
+    // }
+    const [isCombinedQuotationSelected, setIsCombinedQuotationSelected] = useState(false);
+    const [clientPolicyIdForExcel, setClientPolicyIdForExcel] = useState('');
+    const handleOpenSendCombinedQuotationModal = (clientPolicyId) => {
+        setClientPolicyIdForExcel(clientPolicyId);
+        setIsCombinedQuotationSelected(true);
+    }
+    const handleCloseSendCombinedQuotationModal = () => {
+        setIsCombinedQuotationSelected(false);
+        setCombinedQuotationData([]);
+    }
+
+    const handleSendCombinedQuotation = async () => {
+        try {
+            await sendCombinedQuotation({ clientPolicyId: clientPolicyIdForExcel, combinedQuotationData });
+            handleCloseSendCombinedQuotationModal();
+            reload();
+            setSnackbarValue({ message: 'Quotation sent to Client!', status: 'success' });
+            setSnackbarState(true);
+        } catch (error) {
+            setSnackbarValue({ message: error?.response?.data?.message, status: 'error' });
+            setSnackbarState(true);
+        }
     };
 
     return (
@@ -173,15 +201,15 @@ const DashboardTable = ({ unassignedPolicies, onSendCompanyPolicies, onAssignPol
                                 Client Email
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Assigned On
+                                Initiated On
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Details
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Quotation
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Assign
                             </th>
                         </tr>
@@ -220,21 +248,18 @@ const DashboardTable = ({ unassignedPolicies, onSendCompanyPolicies, onAssignPol
                                     </button>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                    <div className='flex items-center justify-start'>
-                                        <p id={`${policy._id}UploadedFile`}></p>
-                                        <button className="flex relative text-green-600 hover:text-green-900">
-                                            {(policy.quotation !== undefined && policy.quotation?.length !== 0)
-                                                ?
-                                                <Tooltip title='Quotation Sent'>
-                                                    <DoneAllOutlined />
-                                                </Tooltip>
-                                                :
-                                                <Tooltip title='Enter quotation' >
-                                                    <PostAddOutlined onClick={() => handleExcelModalOpen(policy._id)} />
-                                                </Tooltip>
-                                            }
-                                        </button>
-                                    </div>
+                                    <button className="w-full flex justify-center relative text-green-600 hover:text-green-900">
+                                        {(policy?.combinedQuotationDetails && Object.keys(policy?.combinedQuotationDetails).length !== 0)
+                                            ?
+                                            <Tooltip title='Quotation Sent'>
+                                                <DoneAllOutlined />
+                                            </Tooltip>
+                                            :
+                                            <Tooltip title='Enter quotation' >
+                                                <PostAddOutlined onClick={() => handleOpenSendCombinedQuotationModal(policy._id)} />
+                                            </Tooltip>
+                                        }
+                                    </button>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                                     <button className="text-green-600 hover:text-green-900">
@@ -270,8 +295,8 @@ const DashboardTable = ({ unassignedPolicies, onSendCompanyPolicies, onAssignPol
                     </div>
                 </div>
 
-                {excelModal && (
-                    <div className="fixed z-[1000] inset-0 bg-black/10 overflow-y-auto h-full w-full">
+                {isCombinedQuotationSelected && (
+                    <div className="fixed !z-[1000] inset-0 bg-black/10 flex justify-center items-center">
                         <div className="relative top-10 mx-auto p-5 border w-full lg:w-[50vw] shadow-lg rounded-md bg-white">
                             <input id='excelUpload' type='file' multiple={false} accept='.xlsx,.xls,.csv' onChange={handleFileUpload} className='opacity-0 absolute pointer-events-none' />
                             <div className='bg-gray-100 rounded-md p-4'>
@@ -282,57 +307,28 @@ const DashboardTable = ({ unassignedPolicies, onSendCompanyPolicies, onAssignPol
                             </div>
                             <p id='excelUploadFileName'></p>
                             <ScrollArea className='max-h-[50vh]'>
-                                {excelData.length !== 0 && (
+                                {combinedQuotationData.length !== 0 && (
                                     <div>
                                         <h2>Imported Excel:</h2>
-                                        <Spreadsheet data={excelData} setData={setData} />
-                                        {/* <pre>{JSON.stringify(excelData, null, 2)}</pre> */}
+                                        <Spreadsheet data={combinedQuotationData} setData={setCombinedQuotationData} className='!w-full border-2 border-gray-900 rounded-lg' />
                                     </div>
                                 )}
                             </ScrollArea>
                             <div className='w-full flex justify-end mt-2'>
                                 <button
                                     type='button'
-                                    onClick={handleExcelModalClose}
+                                    onClick={handleCloseSendCombinedQuotationModal}
                                     className='px-4 py-2 rounded-md text-gray-900 bg-white mr-2 border-2 border-gray-900 mt-2 hover:opacity-95'
                                 >Cancel</button>
                                 <button
-                                    disabled={excelData.length === 0}
-                                    onClick={handleSendExcel}
+                                    disabled={combinedQuotationData.length === 0}
+                                    onClick={handleSendCombinedQuotation}
                                     className='px-4 py-2 rounded-md bg-gray-900 text-white mr-2 mt-2 hover:opacity-95'
                                 >Send</button>
                             </div>
                         </div>
                     </div>
                 )}
-
-                {isCompanyPolicySelected &&
-                    <div className='fixed inset-0 bg-black/10 !z-[1000] flex justify-center items-center' onClick={closeCompanyPolicies}>
-                        <div onClick={(event) => event.stopPropagation()} className='bg-white max-w-[75vw] max-h-[75vh] rounded-lg'>
-                            <div className='px-6 py-4 flex justify-between items-center'>
-                                <h2 className='text-2xl font-bold mb-2'>Quotation(s)</h2>
-                                <Close onClick={closeCompanyPolicies} className='cursor-pointer' />
-                            </div>
-                            <Divider />
-                            <div className='mx-6 mt-3 mb-4'>
-                                <Button
-                                    type='button'
-                                    onClick={handleDownloadExcel}
-                                    className='!flex !items-center !gap-2 !bg-gray-900 !text-white float-right'
-                                >
-                                    Download Excel
-                                    <Download className='!size-4' />
-                                </Button>
-                                <br />
-                                <ScrollArea className='w-full mt-6'>
-                                    <div>
-                                        <Spreadsheet data={selectedCompanyPolicies} />
-                                    </div>
-                                </ScrollArea>
-                            </div>
-                        </div>
-                    </div>
-                }
 
                 {isPolicySelected &&
                     <PolicyDetailModal
@@ -345,4 +341,4 @@ const DashboardTable = ({ unassignedPolicies, onSendCompanyPolicies, onAssignPol
     );
 };
 
-export default DashboardTable;
+export default UnassignedPoliciesTable;

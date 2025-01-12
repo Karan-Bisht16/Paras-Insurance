@@ -2,25 +2,9 @@ import { useState } from 'react';
 import { Button, MenuItem, TextField } from '@mui/material';
 import { Close } from '@mui/icons-material';
 
-// TODO: add companyTaxId
-const CompanyForm = ({ onClose, onSubmit }) => {
+// LATER: add companyTaxId
+const CompanyForm = ({ formData, handleChange, onClose, onSubmit, label }) => {
     const [error, setError] = useState('');
-    const [formData, setFormData] = useState({
-        companyName: '',
-        companyType: 'Corporate',
-        companyStatus: 'Active',
-        companyDescription: '',
-        companyRegistrationNo: '',
-        companyWebsite: '',
-        companyAddress: '',
-    });
-
-    const handleChange = (event) => {
-        const { name, value } = event.target;
-        setFormData(prevFormData => ({
-            ...prevFormData, [name]: value
-        }));
-    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -36,7 +20,7 @@ const CompanyForm = ({ onClose, onSubmit }) => {
                 className="bg-white rounded-lg w-full max-w-2xl"
             >
                 <div className="flex justify-between items-center px-6 py-4 border-b">
-                    <h2 className="text-xl font-semibold">Add New Company</h2>
+                    <h2 className="text-xl font-semibold">{label}</h2>
                     <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
                         <Close />
                     </button>
@@ -46,6 +30,7 @@ const CompanyForm = ({ onClose, onSubmit }) => {
                     <div className="mt-4 grid grid-cols-1 gap-4">
                         <TextField
                             label="Company Name" name="companyName" variant="outlined" required
+                            InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                             value={formData.companyName} onChange={handleChange}
                         />
                     </div>
@@ -53,6 +38,7 @@ const CompanyForm = ({ onClose, onSubmit }) => {
                     <div className="mt-4 grid grid-cols-2 gap-4">
                         <TextField
                             label="Company Type" name="companyType" select variant="outlined" required
+                            InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                             defaultValue={formData.companyType} value={formData.companyType} onChange={handleChange}
                         >
                             <MenuItem value='Corporate'>Corporate</MenuItem>
@@ -61,6 +47,7 @@ const CompanyForm = ({ onClose, onSubmit }) => {
                         </TextField>
                         <TextField
                             label="Company Status" name="companyStatus" select variant="outlined" required
+                            InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                             defaultValue={formData.companyStatus} value={formData.companyStatus} onChange={handleChange}
                         >
                             <MenuItem value='Active'>Active</MenuItem>
@@ -72,6 +59,7 @@ const CompanyForm = ({ onClose, onSubmit }) => {
                         <TextField
                             label="Company Description" name="companyDescription" required
                             multiline rows={3}
+                            InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                             value={formData.companyDescription} onChange={handleChange}
                             className="w-full"
                         />
@@ -80,6 +68,7 @@ const CompanyForm = ({ onClose, onSubmit }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <TextField
                             label="Company Registration No." name="companyRegistrationNo" variant="outlined" required
+                            InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                             value={formData.companyRegistrationNo} onChange={handleChange}
                         />
                         <TextField
@@ -91,7 +80,8 @@ const CompanyForm = ({ onClose, onSubmit }) => {
                     <div className="mt-4">
                         <TextField
                             label="Company Address" name="companyAddress" required
-                            multiline rows={4}
+                            multiline rows={3}
+                            InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                             value={formData.companyAddress} onChange={handleChange}
                             className="w-full"
                         />
@@ -102,7 +92,7 @@ const CompanyForm = ({ onClose, onSubmit }) => {
                             type="submit" variant='contained'
                             className="!text-white !bg-gray-900 hover:opacity-95"
                         >
-                            Add Company
+                            {label}
                         </Button>
                     </div>
 

@@ -1,6 +1,7 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 // importing contexts
 import { ClientContext } from '../contexts/Client.context';
+import { SnackBarContext } from '../contexts/SnackBar.context';
 // importing components
 import Hero from '../components/subcomponents/Hero';
 import Testimonials from '../components/subcomponents/Testimonials';
@@ -11,14 +12,22 @@ import Footer from '../components/Footer';
 
 const Home = () => {
     const { isLoggedIn, condenseClientInfo } = useContext(ClientContext);
+    const { setSnackbarState, setSnackbarValue } = useContext(SnackBarContext);
 
     if (
         isLoggedIn &&
         (
             condenseClientInfo.role?.toLowerCase() === 'superadmin' ||
             condenseClientInfo.role?.toLowerCase() === 'admin'
-        )
+        ) && condenseClientInfo.loginAccess
     ) return <AdminPanel />;
+
+    useEffect(() => {
+        if (isLoggedIn && !condenseClientInfo?.loginAccess) {
+            setSnackbarState(true);
+            setSnackbarValue({ message: 'Login access for admin denied', status: 'error' });
+        }
+    }, []);
 
     return (
         <div>

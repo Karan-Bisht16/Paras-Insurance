@@ -9,7 +9,7 @@ const router = express.Router();
 router.post('/create', createQuotation);
 // router.post('/uploadMedia', auth, upload.any("files"), uploadSipMedia);
 // read
-// router.get('/fetchAllData', auth, fetchAllSipsData);
+// router.get('/fetchAllData', auth, fetchAllUnassignedSipsData);
 // delete ?
 
 export default router;

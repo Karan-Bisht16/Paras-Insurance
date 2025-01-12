@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
+import { Add, AddModerator } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { tailChase } from 'ldrs';
 // importing api end-points
@@ -7,7 +8,6 @@ import { fetchAllPolicies } from '../../api';
 import { ClientContext } from '../../contexts/Client.context';
 // importing components
 import PolicyCard from './PolicyCard';
-import { Add, AddModerator } from '@mui/icons-material';
 
 const ServicesGrid = () => {
     const navigate = useNavigate();
@@ -27,12 +27,10 @@ const ServicesGrid = () => {
         navigate('/insuranceForm', { state: { policyId: policyId } });
     }
     const handleNavigateSip = () => {
-        if (isLoggedIn) { navigate(`/Sip/${condenseClientInfo._id}`) }
-        else { navigate('/auth') }
+        navigate('/sip');
     }
     const handleNavigateGeneralInsurance = () => {
-        if (isLoggedIn) { navigate(`/generalInsurance/${condenseClientInfo._id}`) }
-        else { navigate('/auth') }
+        navigate('/generalInsurance');
     }
 
     tailChase.register();
@@ -85,16 +83,16 @@ const ServicesGrid = () => {
                                         <div onClick={() => handleNavigateInsuranceForm(service._id)} key={index}
                                             // className='animate-border inline-block bg-white bg-gradient-to-r from-blue-400 via-purple-900 to-blue-900 bg-[length:400%_400%] p-1 rounded-lg cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
                                             className='block bg-white rounded-lg py-8 mb-4 cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
-                                            >
+                                        >
                                             {/* <div className='h-full flex flex-col justify-center bg-white rounded-md py-4 px-2'> */}
-                                                <div className='w-full flex justify-center'>
-                                                    <div dangerouslySetInnerHTML={{ __html: service.policyIcon }}></div>
-                                                </div>
-                                                <PolicyCard
-                                                    label={service.policyName}
-                                                    description={service.policyDescription}
-                                                    className='bg-white h-full transition-shadow hover:shadow-md'
-                                                />
+                                            <div className='w-full flex justify-center'>
+                                                <div dangerouslySetInnerHTML={{ __html: service.policyIcon }}></div>
+                                            </div>
+                                            <PolicyCard
+                                                label={service.policyName}
+                                                description={service.policyDescription}
+                                                className='bg-white h-full transition-shadow hover:shadow-md'
+                                            />
                                             {/* </div> */}
                                         </div>
                                     ))

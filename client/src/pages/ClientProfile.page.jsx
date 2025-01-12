@@ -20,7 +20,7 @@ const ClientProfile = () => {
     const { id } = useParams();
 
     const navigate = useNavigate();
-    const { setIsLoggedIn, setCondenseClientInfo } = useContext(ClientContext);
+    const { setIsLoggedIn, condenseClientInfo, setCondenseClientInfo } = useContext(ClientContext);
     const [isLoadingClientData, setIsLoadingClientData] = useState(true);
     const [isUnauthorisedAction, setIsUnauthorisedAction] = useState(false);
     const [isClientDataFound, setIsClientDataFound] = useState(true);
@@ -140,14 +140,17 @@ const ClientProfile = () => {
                                         </h3>
                                     </div>
                                 </div>
-                                <Button
-                                    variant='contained'
-                                    onClick={openUpdateProfile}
-                                    className='flex items-center gap-2.5 !bg-gray-900 hover:opacity-95'
-                                >
-                                    Update
-                                    <Edit className='!size-4' />
-                                </Button>
+                                {
+                                    !(condenseClientInfo?.role?.toLowerCase() === 'admin' && clientData?.userType?.toLowerCase() === 'employee') &&
+                                    <Button
+                                        variant='contained'
+                                        onClick={openUpdateProfile}
+                                        className='flex items-center gap-2.5 !bg-gray-900 hover:opacity-95'
+                                    >
+                                        Update
+                                        <Edit className='!size-4' />
+                                    </Button>
+                                }
                             </div>
                             <div className='relative mt-4 rounded-3xl '>
                                 <Accordion defaultExpanded className='!bg-white/95 !mb-0 !border-b-2 !border-gray-600 !rounded-t-xl !shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
@@ -267,7 +270,7 @@ const ClientProfile = () => {
                                                     <p className='w-full border-2 rounded-lg px-2 py-1'>{clientData?.financialDetails?.panCardNo}&nbsp;</p>
                                                     {clientData?.financialDetails?.panCardURL ?
                                                         <Link
-                                                            to={`/uploads/${clientData?.financialDetails?.panCardURL}`}
+                                                            to={clientData?.financialDetails?.panCardURL}
                                                             target="_blank" rel="noopener noreferrer"
                                                             className='w-72 py-1 px-2 rounded-md text-white bg-gray-900 hover:opacity-95'
                                                         >
@@ -287,7 +290,7 @@ const ClientProfile = () => {
                                                     <p className='w-full border-2 rounded-lg px-2 py-1'>{clientData?.financialDetails?.aadhaarNo}&nbsp;</p>
                                                     {clientData?.financialDetails?.aadhaarURL ?
                                                         <Link
-                                                            to={`/uploads/${clientData?.financialDetails?.aadhaarURL}`}
+                                                            to={clientData?.financialDetails?.aadhaarURL}
                                                             target="_blank" rel="noopener noreferrer"
                                                             className='w-72 py-1 px-2 rounded-md text-white bg-gray-900 hover:opacity-95'
                                                         >
@@ -315,6 +318,24 @@ const ClientProfile = () => {
                                                 <h3 className="block text-sm font-medium text-gray-700 mb-1">Bank Name</h3>
                                                 <p className='border-2 rounded-lg px-2 py-1'>{clientData?.financialDetails?.accountDetails?.bankName}&nbsp;</p>
                                             </div>
+                                            <div className='w-full flex items-end'>
+                                                {clientData?.financialDetails?.accountDetails?.cancelledChequeURL ?
+                                                    <Link
+                                                        to={clientData?.financialDetails?.accountDetails?.cancelledChequeURL}
+                                                        target="_blank" rel="noopener noreferrer"
+                                                        className='w-full py-1 px-2 rounded-md text-white bg-gray-900 hover:opacity-95'
+                                                    >
+                                                        <div className='flex gap-2 items-center justify-center'>
+                                                            Uploaded Cancelled Cheque
+                                                            <OpenInNew className='!size-4' />
+                                                        </div>
+                                                    </Link>
+                                                    :
+                                                    <p className='w-full py-1 px-2 rounded-md text-center text-white bg-red-600 hover:opacity-95'>No Cancelled Cheque Image Uploaded</p>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div className='w-full flex justify-center'>
                                         </div>
                                     </AccordionDetails>
                                 </Accordion>
@@ -327,7 +348,6 @@ const ClientProfile = () => {
                                         <div className='flex justify-between gap-4 mb-2'>
                                             <div className='w-full'>
                                                 <h3 className="block text-sm font-medium text-gray-700 mb-1">Company Name</h3>
-                                                {console.log(clientData.employmentDetails)}
                                                 <p className='border-2 rounded-lg px-2 py-1'>{clientData?.employmentDetails?.companyName}&nbsp;</p>
                                             </div>
                                             <div className='w-full'>

@@ -1,7 +1,7 @@
 import { Close } from "@mui/icons-material";
 import { Divider } from "@mui/material";
 
-// TODO: Assigned policy view certificate button within modal aswell
+// LATER: Assigned policy view certificate button within modal aswell
 const PolicyDetailModal = ({ selectedPolicy, closeModal, isCompanyForm }) => {
     const repeatedFields = (n, field) => {
         const elements = [];
@@ -103,7 +103,7 @@ const PolicyDetailModal = ({ selectedPolicy, closeModal, isCompanyForm }) => {
     }
 
     return (
-        <div className='fixed !z-[1000] inset-0 bg-gray-100/25 flex justify-center items-center' onClick={closeModal}>
+        <div className='fixed !z-[1000] inset-0 bg-black/10 flex justify-center items-center' onClick={closeModal}>
             <div
                 onClick={(event) => event.stopPropagation()}
                 className='relative h-[75vh] overflow-y-scroll no-scrollbar bg-white w-[65vw] pb-6 rounded-xl shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'

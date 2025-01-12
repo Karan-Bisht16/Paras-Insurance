@@ -1,8 +1,10 @@
-import { useNavigate, useParams } from "react-router-dom";
-import QuotationForm from "../components/subcomponents/QuotationForm";
 import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { tailChase } from 'ldrs';
+// importing api end-points
 import { createQuotation, fetchClientPolicy } from "../api";
+// importing components
+import QuotationForm from "../components/subcomponents/QuotationForm";
 import PolicyDetailModal from "../components/subcomponents/PolicyDetailModal";
 
 const CompanyForm = () => {
@@ -16,11 +18,10 @@ const CompanyForm = () => {
 
     const getClientPolicyData = async () => {
         try {
-            const { data, status } = await fetchClientPolicy({ clientPolicyId, companyId });
+            const { data } = await fetchClientPolicy({ clientPolicyId, companyId });
             setClientPolicyData(data);
             setIsLoadingClientPolicyData(false);
         } catch (error) {
-            console.log(error);
             if (error?.status === 404) {
                 setNoCompany(true);
                 setIsLoadingClientPolicyData(false);
@@ -28,6 +29,7 @@ const CompanyForm = () => {
                 setFormAlreadyFilled(true);
                 setIsLoadingClientPolicyData(false);
             }
+            console.error(error);
         }
     }
     useEffect(() => {
@@ -36,12 +38,11 @@ const CompanyForm = () => {
     }, [clientPolicyId, companyId]);
 
     const handleAddQuotation = async (quotationData) => {
-        console.log(quotationData);
         try {
-            const { data } = await createQuotation({ clientPolicyId, clientId, companyId, quotationData });
-            navigate('/');
+            await createQuotation({ clientPolicyId, clientId, companyId, quotationData });
+            navigate('/', { state: { status: 'success', message: 'Quotation data recieved!', time: new Date().getTime() } })
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }
 

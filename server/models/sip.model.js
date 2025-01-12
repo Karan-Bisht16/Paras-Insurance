@@ -106,21 +106,11 @@ const sipSchema = new mongoose.Schema({
             bankName: {
                 type: String,
                 default: '',
+            },
+            cancelledChequeURL: {
+                type: String,
+                default: '',
             }
-        }
-    },
-    employmentDetails: {
-        companyName: {
-            type: String,
-            default: '',
-        },
-        designation: {
-            type: String,
-            default: '',
-        },
-        annualIncome: {
-            type: String,
-            default: '',
         }
     },
     stage: {
@@ -130,10 +120,13 @@ const sipSchema = new mongoose.Schema({
         required: true,
     },
     assignedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Client',
+        type: String,
     },
-    sipCertificateURL: {
+    sipNo: {
+        type: String,
+        default: ''
+    },
+    sipDocumentURL: {
         type: String,
         default: '',
     }

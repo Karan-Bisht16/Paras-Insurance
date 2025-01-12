@@ -71,19 +71,19 @@ const App = () => {
                     element={<div><InsuranceForm /><Footer /></div>}
                 />
                 <Route
-                    path='/generalInsurance/:id'
-                    element={<ProtectedRoute Component={GeneralInsurance} user={condenseClientInfo} />}
+                    path='/sip'
+                    element={<div><SIP /><Footer /></div>}
                 />
                 <Route
-                    path='/sip/:id'
-                    element={<ProtectedRoute Component={SIP} user={condenseClientInfo} />}
+                    path='/generalInsurance'
+                    element={<div><GeneralInsurance /><Footer /></div>}
                 />
                 <Route
                     path='/profile/:id'
                     element={<ProtectedRoute Component={ClientProfile} user={condenseClientInfo} />}
                 />
                 <Route
-                    path='/myPolicies/:id'
+                    path='/policies/:id'
                     element={<ProtectedRoute Component={ClientPolicies} user={condenseClientInfo} />}
                 />
                 <Route

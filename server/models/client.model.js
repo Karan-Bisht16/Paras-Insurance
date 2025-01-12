@@ -25,7 +25,6 @@ const clientSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
     },
     refreshToken: {
         type: String,
@@ -142,6 +141,10 @@ const clientSchema = new mongoose.Schema({
                 default: '',
             },
             bankName: {
+                type: String,
+                default: '',
+            },
+            cancelledChequeURL: {
                 type: String,
                 default: '',
             }

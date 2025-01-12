@@ -6,10 +6,6 @@ const employeeSchema = new mongoose.Schema({
         ref: 'Client',
         required: true
     },
-    notes: {
-        type: String,
-        default: null,
-    },
     role: {
         type: String,
         enum: ['Admin', 'SuperAdmin'],
@@ -28,16 +24,12 @@ const employeeSchema = new mongoose.Schema({
         required: true,
     },
     statusChangedBy: {
-        type: String,
-        default: 'System',
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employee',
     },
     loginAccess: {
         type: Boolean,
-        default: false,
-    },
-    lastLogin: {
-        type: Date,
-        default: null,
+        default: true,
     }
 }, { timestamps: true });
 

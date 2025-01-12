@@ -109,21 +109,11 @@ const generalInsuranceSchema = new mongoose.Schema({
             bankName: {
                 type: String,
                 default: '',
+            },
+            cancelledChequeURL: {
+                type: String,
+                default: '',
             }
-        }
-    },
-    employmentDetails: {
-        companyName: {
-            type: String,
-            default: '',
-        },
-        designation: {
-            type: String,
-            default: '',
-        },
-        annualIncome: {
-            type: String,
-            default: '',
         }
     },
     stage: {
@@ -133,10 +123,13 @@ const generalInsuranceSchema = new mongoose.Schema({
         required: true,
     },
     assignedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Client',
+        type: String,
     },
-    sipCertificateURL: {
+    generalInsuranceNo: {
+        type: String,
+        default: ''
+    },
+    generalInsuranceDocumentURL: {
         type: String,
         default: '',
     }

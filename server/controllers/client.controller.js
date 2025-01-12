@@ -2,7 +2,9 @@ import fs from 'fs';
 import ejs from 'ejs';
 import path from 'path';
 import jwt from 'jsonwebtoken';
+import csv from 'csvtojson';
 import { ObjectId } from 'mongodb';
+import { Parser } from '@json2csv/plainjs';
 // importing models
 import Client from '../models/client.model.js';
 import Employee from '../models/employee.model.js';
@@ -101,6 +103,39 @@ const login = async (req, res) => {
     }
 };
 // working
+const create = async (req, res) => {
+    try {
+        const { firstName, lastName, email, phone, password } = req.body;
+
+        const isClientEmailUnique = await Client.findOne({ 'personalDetails.contact.email': email });
+        if (isClientEmailUnique) return res.status(400).json({ message: 'Email already registered. Login' });
+
+        const isClientPhoneUnique = await Client.findOne({ 'personalDetails.contact.phone': phone });
+        if (isClientPhoneUnique) return res.status(400).json({ message: 'Phone already registered. Login' });
+
+        const newClient = await Client.create({
+            userType: 'Lead',
+            password: password,
+            personalDetails: {
+                firstName: firstName,
+                lastName: lastName,
+                contact: {
+                    email: email,
+                    phone: phone
+                },
+            }
+        });
+
+        const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(newClient);
+        const clientInfo = await condenseClientInfo(newClient);
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
+// working
 const fetchCondenseInfo = async (req, res) => {
     try {
         const clientInfo = await condenseClientInfo(req.client);
@@ -170,6 +205,15 @@ const fetchPoliciesData = async (req, res) => {
             },
             { $unwind: '$policyData' },
             {
+                $lookup: {
+                    from: 'combinedquotations',
+                    localField: 'quotation',
+                    foreignField: '_id',
+                    as: 'quotationData'
+                }
+            },
+            { $unwind: { path: '$quotationData', preserveNullAndEmptyArrays: true } },
+            {
                 $project: {
                     _id: 1,
                     clientId: 1,
@@ -179,14 +223,22 @@ const fetchPoliciesData = async (req, res) => {
                     createdAt: 1,
                     updatedAt: 1,
                     expiryDate: 1,
-                    quotation: 1,
-                    policyCertificateURL: 1,
+                    policyDocumentURL: 1,
                     policyDetails: {
                         policyName: '$policyData.policyName',
                         policyType: '$policyData.policyType',
                         policyDescription: '$policyData.policyDescription',
                         policyIcon: '$policyData.policyIcon',
                         policyForm: '$policyData.form',
+                    },
+                    combinedQuotationDetails: {
+                        quotationData: '$quotationData.quotationData',
+                        status: '$quotationData.status',
+                        countTotalEmails: '$quotationData.countTotalEmails',
+                        countRecievedQuotations: '$quotationData.countRecievedQuotations',
+                        sentBy: '$quotationData.sentBy',
+                        createdAt: '$quotationData.createdAt',
+                        updatedAt: '$quotationData.updatedAt',
                     }
                 }
             }
@@ -235,7 +287,7 @@ const fetchAllClients = async (req, res) => {
         res.status(503).json({ message: 'Network error. Try again' })
     }
 };
-// I think this works TODO: check reliability
+// working
 const updateProfile = async (req, res) => {
     try {
         const { formData, removedFiles } = req.body.formData;
@@ -275,18 +327,22 @@ const updateProfile = async (req, res) => {
         if (existingClient) return res.status(400).json({ message: 'Email, Phone, Aadhaar No, or PAN Card No must be unique.' });
 
         const client = await Client.findById(clientId);
-        if (removedFiles.aadhaar && client.financialDetails?.aadhaarURL) {
-            const aadhaarPath = path.join(__dirname, 'uploads', client.financialDetails.aadhaarURL);
+        if (removedFiles?.aadhaar && client?.financialDetails?.aadhaarURL) {
+            const aadhaarPath = path.join(__dirname, 'uploads', client?.financialDetails?.aadhaarURL);
             if (fs.existsSync(aadhaarPath)) fs.unlinkSync(aadhaarPath);
             financialDetails.aadhaarURL = '';
         }
-        if (removedFiles.panCard && client.financialDetails?.panCardURL) {
-            const panCardPath = path.join(__dirname, 'uploads', client.financialDetails.panCardURL);
+        if (removedFiles?.panCard && client?.financialDetails?.panCardURL) {
+            const panCardPath = path.join(__dirname, 'uploads', client?.financialDetails?.panCardURL);
             if (fs.existsSync(panCardPath)) fs.unlinkSync(panCardPath);
             financialDetails.panCardURL = '';
         }
+        if (removedFiles?.cancelledCheque && client?.financialDetails?.accountDetails?.cancelledChequeURL) {
+            const cancelledChequePath = path.join(__dirname, 'uploads', client?.financialDetails?.accountDetails?.cancelledChequeURL);
+            if (fs.existsSync(cancelledChequePath)) fs.unlinkSync(cancelledChequePath);
+            financialDetails.accountDetails.cancelledChequeURL = '';
+        }
 
-        // update in interaction history
         const updatedClient = await Client.findByIdAndUpdate(
             clientId,
             { personalDetails, financialDetails, employmentDetails },
@@ -312,6 +368,7 @@ const uploadProfileMedia = async (req, res) => {
     try {
         const { clientId } = req.body;
         const filesArray = req.files;
+
         const client = await Client.findById(clientId);
         if (!client) return res.status(404).json({ message: 'Client not found.' });
 
@@ -320,17 +377,24 @@ const uploadProfileMedia = async (req, res) => {
             if (fieldName === 'panCard') {
                 // Delete old PAN card file
                 if (client.financialDetails?.panCardURL) {
-                    const oldPath = path.join(__dirname, 'uploads', client.financialDetails.panCardURL);
+                    const oldPath = path.join(__dirname, 'uploads', client?.financialDetails?.panCardURL);
                     if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
                 }
-                client.financialDetails.panCardURL = file.filename;
+                client.financialDetails.panCardURL = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
             } else if (fieldName === 'aadhaar') {
                 // Delete old Aadhaar file
                 if (client.financialDetails?.aadhaarURL) {
-                    const oldPath = path.join(__dirname, 'uploads', client.financialDetails.aadhaarURL);
+                    const oldPath = path.join(__dirname, 'uploads', client?.financialDetails?.aadhaarURL);
                     if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
                 }
-                client.financialDetails.aadhaarURL = file.filename;
+                client.financialDetails.aadhaarURL = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
+            } else if (fieldName === 'cancelledCheque') {
+                // Delete old Cancelled Cheque file
+                if (client.financialDetails?.accountDetails?.cancelledChequeURL) {
+                    const oldPath = path.join(__dirname, 'uploads', client?.financialDetails?.accountDetails?.cancelledChequeURL);
+                    if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+                }
+                client.financialDetails.accountDetails.cancelledChequeURL = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
             }
         }
         await client.save();
@@ -346,7 +410,6 @@ const uploadProfileMedia = async (req, res) => {
         //         filesPath.aadhaarFilePath = fileName;
         //     }
         // }
-        // console.log(filesPath);
         // const client = await Client.findById(clientId);
         // if (!client) {
         //     // Delete the newly uploaded files since the client doesn't exist
@@ -398,7 +461,7 @@ const logout = async (req, res) => {
         res.status(503).json({ message: 'Network error. Try again' })
     }
 };
-// working TODO: (delete assosiated ClientPolicy)
+// working
 const deleteProfile = async (req, res) => {
     try {
         const clientId = req.client._id;
@@ -484,10 +547,166 @@ const resetPassword = async (req, res) => {
         }
     }
 };
+// working
+const findClient = async (req, res) => {
+    try {
+        const { email, phone } = req.body;
+        const checkForEmail = await Client.findOne({ 'personalDetails.contact.email': email });
+        const checkForPhone = await Client.findOne({ 'personalDetails.contact.phone': phone });
+        if (!checkForEmail && !checkForPhone) return res.status(404).json({ message: 'No such client found' });
+
+        let returnData;
+        if (checkForEmail) returnData = checkForEmail.personalDetails.contact.email;
+        if (checkForPhone) returnData = checkForPhone.personalDetails.contact.phone;
+
+        res.status(200).json(returnData);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' })
+    }
+};
+// working
+const exportCsv = async (req, res) => {
+    try {
+        const clients = await Client.find().lean();
+        const fields = [
+            '_id',
+            'userType',
+            'personalDetails.firstName',
+            'personalDetails.lastName',
+            'personalDetails.gender',
+            'personalDetails.dob',
+            'personalDetails.contact.email',
+            'personalDetails.contact.phone',
+            'personalDetails.address.street',
+            'personalDetails.address.city',
+            'personalDetails.address.state',
+            'personalDetails.address.pincode',
+            'personalDetails.address.country',
+            'personalDetails.nominee.name',
+            'personalDetails.nominee.dob',
+            'personalDetails.nominee.relationship',
+            'personalDetails.nominee.phone',
+            'financialDetails.panCardNo',
+            'financialDetails.aadhaarNo',
+            'financialDetails.accountDetails.accountNo',
+            'financialDetails.accountDetails.ifscCode',
+            'financialDetails.accountDetails.bankName',
+            'KYC'
+        ];
+
+        const json2csvParser = new Parser({ fields });
+        const csv = json2csvParser.parse(clients);
+
+        res.header('Content-Type', 'text/csv');
+        res.attachment('clients.csv');
+
+        return res.send(csv);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
+// working LATER: maybe assignPasswordFunction
+// No password for imported clients
+const importCsv = async (req, res) => {
+    try {
+        const csvData = await csv().fromFile(req.file.path);
+
+        const operations = csvData.map(async (row) => {
+            const { _id, kyc } = row;
+            try {
+                if (_id) {
+                    return await Client.updateOne(
+                        { _id: _id },
+                        {
+                            $set: {
+                                'personalDetails.firstName': row.personalDetails.firstName,
+                                'personalDetails.lastName': row.personalDetails.lastName || '',
+                                'personalDetails.gender': row.personalDetails.gender,
+                                'personalDetails.dob': row.personalDetails.dob || null,
+                                'personalDetails.contact.email': row.personalDetails.contact.email,
+                                'personalDetails.contact.phone': row.personalDetails.contact.phone,
+                                'personalDetails.address.street': row.personalDetails.address.street || '',
+                                'personalDetails.address.city': row.personalDetails.address.city || '',
+                                'personalDetails.address.state': row.personalDetails.address.state || '',
+                                'personalDetails.address.pincode': row.personalDetails.address.pincode || '',
+                                'personalDetails.address.country': row.personalDetails.address.country || '',
+                                'personalDetails.nominee.name': row.personalDetails.nominee.name || '',
+                                'personalDetails.nominee.dob': row.personalDetails.nominee.noieedob || '',
+                                'personalDetails.nominee.relationship': row.personalDetails.nominee.relationship || '',
+                                'personalDetails.nominee.phone': row.personalDetails.nominee.noieephone || '',
+                                'financialDetails.panCardNo': row.financialDetails.panCardNo,
+                                'financialDetails.aadhaarNo': row.financialDetails.aadhaarNo,
+                                'financialDetails.accountDetails.accountNo': row.financialDetails.accountDetails.accountNo,
+                                'financialDetails.accountDetails.ifscCode': row.financialDetails.accountDetails.ifscCode,
+                                'financialDetails.accountDetails.bankName': row.financialDetails.accountDetails.bankName || '',
+                                KYC: kyc === 'true',
+                            },
+                        },
+                        { runValidators: true }
+                    );
+                } else {
+                    return await Client.create({
+                        personalDetails: {
+                            firstName: row.personalDetails.firstName,
+                            lastName: row.personalDetails.lastName || '',
+                            gender: row.personalDetails.gender,
+                            dob: row.personalDetails.dob || null,
+                            contact: {
+                                email: row.personalDetails.contact.email,
+                                phone: row.personalDetails.contact.phone,
+                            },
+                            address: {
+                                street: row.personalDetails.address.street || '',
+                                city: row.personalDetails.address.city || '',
+                                state: row.personalDetails.address.state || '',
+                                pincode: row.personalDetails.address.pincode || '',
+                                country: row.personalDetails.address.country || '',
+                            },
+                            nominee: {
+                                name: row.personalDetails.nominee.name || '',
+                                dob: row.personalDetails.nominee.noieedob || '',
+                                relationship: row.personalDetails.nominee.relationship || '',
+                                phone: row.personalDetails.nominee.noieephone || '',
+                            },
+                        },
+                        financialDetails: {
+                            panCardNo: row.financialDetails.panCardNo,
+                            aadhaarNo: row.financialDetails.aadhaarNo,
+                            accountDetails: {
+                                accountNo: row.financialDetails.accountDetails.accountNo,
+                                ifscCode: row.financialDetails.accountDetails.ifscCode,
+                                bankName: row.financialDetails.accountDetails.bankName || '',
+                            },
+                        },
+                        KYC: kyc === 'true',
+                    });
+                }
+            } catch (error) {
+                if (error.name === 'ValidationError') {
+                    const missingFields = Object.keys(error.errors).map((field) => error.errors[field].path);
+                    console.error(`Validation failed for row: ${JSON.stringify(row)}`);
+                    console.error(`Missing or invalid fields: ${missingFields.join(', ')}`);
+                } else {
+                    throw error;
+                }
+            }
+        });
+
+        await Promise.all(operations);
+
+        res.status(200).json({ message: 'CSV processed successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
 
 export {
     register,
     login,
+    create,
     fetchCondenseInfo,
     fetchProfileData,
     fetchPoliciesData,
@@ -498,4 +717,7 @@ export {
     deleteProfile,
     forgotPassword,
     resetPassword,
+    findClient,
+    exportCsv,
+    importCsv,
 };

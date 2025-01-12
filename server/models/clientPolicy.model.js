@@ -30,12 +30,22 @@ const clientPolicySchema = new mongoose.Schema({
     assignedBy: {
         type: String,
     },
-    policyCertificateURL: {
+    policyNo: {
+        type: String,
+        default: ''
+    },
+    policyDocumentURL: {
         type: String,
         default: '',
     },
     quotation: {
-        type: mongoose.Schema.Types.Mixed,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'CombinedQuotation',
+    },
+    origin: {
+        type: String,
+        enum: ['AssignedBySystem', 'UploadedByUser'],
+        default: 'AssignedBySystem'
     }
 }, { timestamps: true });
 

@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Tooltip } from '@mui/material';
+import { Checkbox, Tooltip } from '@mui/material';
 import { OpenInNew, SearchOutlined, Visibility } from '@mui/icons-material';
-// importing api end-points
-import { toFormattedDate } from '../../../utils/helperFunctions';
 // importing components
-import PolicyDetailModal from '../../subcomponents/PolicyDetailModal';
+import SipDetailModal from '../../subcomponents/SipDetailModal';
+// importing helper functions
+import { toFormattedDate } from '../../../utils/helperFunctions';
 
-const PolicyTable = ({ assignedPolicies, reload }) => {
+const UnassignedSipsTable = ({ unassignedSips, onAssignSip, isGeneralInsurance }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -18,29 +18,29 @@ const PolicyTable = ({ assignedPolicies, reload }) => {
         setCurrentPage(prev => Math.max(prev - 1, 1));
     };
 
-    const filteredAssignedPolicies = useMemo(() => {
-        return assignedPolicies.filter(assignedPolicy => {
+    const filteredUnassignedSips = useMemo(() => {
+        return unassignedSips.filter(unassignedSip => {
             const searchMatch =
-                assignedPolicy.clientDetails.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                assignedPolicy.clientDetails.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                assignedPolicy.clientDetails.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                assignedPolicy.clientDetails.phone.includes(searchTerm);
+                unassignedSip?.clientDetails?.personalDetails?.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                unassignedSip?.clientDetails?.personalDetails?.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                unassignedSip?.clientDetails?.personalDetails?.contact?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                unassignedSip?.clientDetails?.personalDetails?.contact?.phone.includes(searchTerm);
 
-            let policyMatch = true;
-            return searchMatch && policyMatch;
+            let sipMatch = true;
+            return searchMatch && sipMatch;
         });
-    }, [searchTerm, assignedPolicies]);
+    }, [searchTerm, unassignedSips]);
 
-    const totalPages = Math.ceil(filteredAssignedPolicies.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredUnassignedSips.length / itemsPerPage);
     const indexOfLastClient = currentPage * itemsPerPage;
     const indexOfFirstClient = indexOfLastClient - itemsPerPage;
-    const currentAssignedPolicies = filteredAssignedPolicies.slice(indexOfFirstClient, indexOfLastClient);
+    const currentUnassignedPolicies = filteredUnassignedSips.slice(indexOfFirstClient, indexOfLastClient);
 
-    const [isPolicySelected, setIsPolicySelected] = useState(false);
-    const [selectedPolicy, setSelectedPolicy] = useState(null);
-    const handleSelectPolicy = (policyData) => {
-        setSelectedPolicy(policyData);
-        setIsPolicySelected(true);
+    const [isSipSelected, setIsSipSelected] = useState(false);
+    const [selectedSip, setSelectedSip] = useState(null);
+    const handleSelectSip = (sipData) => {
+        setSelectedSip(sipData);
+        setIsSipSelected(true);
     };
 
     return (
@@ -62,66 +62,80 @@ const PolicyTable = ({ assignedPolicies, reload }) => {
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Policy Name
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Policy Type
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Client Name
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Client Number
+                                Email
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Client Email
+                                Phone
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Assigned On
+                                DoB
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Gender
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Initiated On
+                            </th>
+                            {isGeneralInsurance &&
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Type
+                                </th>
+                            }
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Details
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Assigned By
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Assign
                             </th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {currentAssignedPolicies.map((policy, index) => (
+                        {currentUnassignedPolicies.map((sip, index) => (
                             <tr key={index}>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm font-medium text-gray-900">{policy?.format?.policyName}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-500">{policy?.format?.policyType}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <a href={`/profile/${policy?.clientId}`} target='_blank' className="flex gap-1 !items-center text-sm text-gray-500 cursor-pointer hover:underline">
-                                        {policy.clientDetails.firstName} {policy.clientDetails.lastName}
+                                    <a href={`/profile/${sip?.clientId}`} target='_blank' className="flex gap-1 !items-center text-sm font-medium text-gray-900 cursor-pointer hover:underline">
+                                        {sip?.clientDetails?.personalDetails?.firstName} {sip?.clientDetails?.personalDetails?.lastName}
                                         <Tooltip title='View profile'>
                                             <OpenInNew className='!size-4' />
                                         </Tooltip>
                                     </a>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-500">{policy.clientDetails.phone}</div>
+                                    <div className="text-sm text-gray-500">{sip?.clientDetails?.personalDetails?.contact?.email}</div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-500">{policy.clientDetails.email}</div>
+                                    <div className="text-sm text-gray-500">{sip?.clientDetails?.personalDetails?.contact?.phone}</div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-500">{toFormattedDate(policy.createdAt)}</div>
+                                    <div className="text-sm text-gray-500">{toFormattedDate(sip?.clientDetails?.personalDetails?.dob) || ''}</div>
                                 </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm text-gray-500">{sip?.clientDetails?.personalDetails?.gender}</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm text-gray-500">{toFormattedDate(sip?.createdAt)}</div>
+                                </td>
+                                {isGeneralInsurance &&
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-500">{sip?.policyType}</div>
+                                    </td>
+                                }
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                                     <button className="text-blue-600 hover:text-blue-900">
-                                        <Tooltip title='View policy details'>
-                                            <Visibility onClick={() => handleSelectPolicy(policy)} />
+                                        <Tooltip title='View SIP details'>
+                                            <Visibility onClick={() => handleSelectSip(sip)} />
                                         </Tooltip>
                                     </button>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-500">{policy.assignedBy}</div>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                    <button className="text-green-600 hover:text-green-900">
+                                        <Tooltip title='Assign SIP'>
+                                            <Checkbox onChange={() => onAssignSip(sip._id)} checked={false} />
+                                        </Tooltip>
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -130,7 +144,7 @@ const PolicyTable = ({ assignedPolicies, reload }) => {
 
                 <div className="flex justify-between items-center mt-4">
                     <div className="text-sm text-gray-700">
-                        Showing {indexOfFirstClient + 1} to {Math.min(indexOfLastClient, filteredAssignedPolicies.length)} of {filteredAssignedPolicies.length} results
+                        Showing {indexOfFirstClient + 1} to {Math.min(indexOfLastClient, filteredUnassignedSips.length)} of {filteredUnassignedSips.length} results
                     </div>
                     <div className="flex space-x-2">
                         <button
@@ -150,10 +164,11 @@ const PolicyTable = ({ assignedPolicies, reload }) => {
                     </div>
                 </div>
 
-                {isPolicySelected &&
-                    <PolicyDetailModal
-                        selectedPolicy={selectedPolicy}
-                        closeModal={() => setIsPolicySelected(false)}
+                {isSipSelected &&
+                    <SipDetailModal
+                        label={isGeneralInsurance ? `General Insurance (${selectedSip?.policyType})` : 'SIP'}
+                        selectedSip={selectedSip}
+                        closeModal={() => setIsSipSelected(false)}
                     />
                 }
             </div>
@@ -161,4 +176,4 @@ const PolicyTable = ({ assignedPolicies, reload }) => {
     );
 };
 
-export default PolicyTable;
+export default UnassignedSipsTable;

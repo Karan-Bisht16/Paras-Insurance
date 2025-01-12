@@ -22,7 +22,7 @@ const combinedQuotationSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Submitted', 'Pending'],
+        enum: ['Pending', 'UploadedByAdmin', 'SentByAdmin', 'SentAutomatically'],
         default: 'Pending',
         required: true,
     },
@@ -32,8 +32,11 @@ const combinedQuotationSchema = new mongoose.Schema({
     },
     countRecievedQuotations: {
         type: Number,
+    },
+    sentBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Client',
     }
-    // sentBy:{   }
 }, { timestamps: true });
 
 const CombinedQuotation = mongoose.model('CombinedQuotation', combinedQuotationSchema);

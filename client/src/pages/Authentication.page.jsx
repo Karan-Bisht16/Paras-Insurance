@@ -48,6 +48,7 @@ const Authentication = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState(false);
     const handleError = (error) => {
+        console.error(error);
         if (error.code === 'ERR_NETWORK') {
             setError('Server is down. Please try again later.');
         } else {

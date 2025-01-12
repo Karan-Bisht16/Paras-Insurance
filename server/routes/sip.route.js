@@ -1,7 +1,7 @@
 import express from 'express';
 import auth from '../middleware/auth.middleware.js';
 import upload from '../middleware/multer.middleware.js';
-import { createSip, fetchAllSips, fetchAllSipsData, uploadSipMedia } from '../controllers/sip.controller.js';
+import { assignSip, createSip, fetchAllAssignedSips, fetchAllUnassignedSips, fetchSips, uploadAssignSipMedia, uploadSipMedia } from '../controllers/sip.controller.js';
 
 const router = express.Router();
 
@@ -9,8 +9,11 @@ const router = express.Router();
 router.post('/create', auth, createSip);
 router.post('/uploadMedia', auth, upload.any("files"), uploadSipMedia);
 // read
-router.get('/fetchAllData', auth, fetchAllSipsData);
-router.get('/fetchAllSips', auth, fetchAllSips);
-// delete ?
+router.get('/fetchSips', auth, fetchSips);
+router.get('/fetchAllUnassigned', auth, fetchAllUnassignedSips);
+router.get('/fetchAllAssigned', auth, fetchAllAssignedSips);
+// update
+router.post('/assignSip', auth, assignSip);
+router.post('/uploadAssignSipMedia', upload.any('files'), uploadAssignSipMedia);
 
 export default router;

@@ -1,11 +1,6 @@
-import { useContext } from 'react';
 import { Link } from 'react-router-dom';
-// importing contexts
-import { ClientContext } from '../contexts/Client.context';
 
 const Footer = () => {
-    const { isLoggedIn, condenseClientInfo } = useContext(ClientContext);
-
     return (
         <footer className='bg-gray-900 text-white pt-12 pb-4 px-4 md:px-40 relative z-10'>
             <div className='mx-auto'>
@@ -16,44 +11,19 @@ const Footer = () => {
                             <li><a href='#' className='text-xs sm:text-md hover:text-gray-400'>Home</a></li>
                             <li><Link to='/aboutUs' className='text-xs sm:text-md hover:text-gray-400'>About Us</Link></li>
                             <li><Link to='/contactUs' className='text-xs sm:text-md hover:text-gray-400'>Contact Us</Link></li>
-                            {/* 
-                            <li><Link to='/' className='text-xs sm:text-md hover:text-gray-400'>Renew your policy</Link></li>
-                            */}
                         </ul>
                     </div>
                     <div>
                         <h5 className='font-bold text-md sm:text-xl mb-4'>Our Solutions</h5>
                         <ul className='sm:space-y-2'>
-                            <li><a href='#productsAndServices' className='text-xs sm:text-md hover:text-gray-400'>Products & Services</a></li>
+                            <li><a href='/#productsAndServices' className='text-xs sm:text-md hover:text-gray-400'>Products & Services</a></li>
                             <li>
-                                <Link to={isLoggedIn ? `/SIP/${condenseClientInfo._id}` : '/auth'} className='text-xs sm:text-md hover:text-gray-400'>
+                                <Link to='/sip' className='text-xs sm:text-md hover:text-gray-400'>
                                     Start a SIP
                                 </Link>
                             </li>
                         </ul>
                     </div>
-                    {/* 
-                    <div>
-                        <h5 className='font-bold text-md sm:text-xl mb-4'>Companies</h5>
-                        <ul className='sm:space-y-2'>
-                            <li><Link to='/' className='text-xs sm:text-md hover:text-gray-400'>TATA</Link></li>
-                            <li><Link to='/' className='text-xs sm:text-md hover:text-gray-400'>HDFC</Link></li>
-                            <li><Link to='/' className='text-xs sm:text-md hover:text-gray-400'>NIVA BUPA</Link></li>
-                            <li><Link to='/' className='text-xs sm:text-md hover:text-gray-400'>ABHI</Link></li>
-                            <li><Link to='/' className='text-xs sm:text-md hover:text-gray-400'>MAGMA HDI</Link></li>
-                            <li><Link to='/' className='text-xs sm:text-md hover:text-gray-400'>ICICI</Link></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h5 className='font-bold text-md sm:text-xl mb-4'>Community</h5>
-                        <ul className='sm:space-y-2'>
-                            <li><Link to='/' className='text-xs sm:text-md hover:text-gray-400'>Issues</Link></li>
-                            <li><Link to='/' className='text-xs sm:text-md hover:text-gray-400'>Discussions</Link></li>
-                            <li><Link to='/' className='text-xs sm:text-md hover:text-gray-400'>Corporate sponsors</Link></li>
-                            <li><Link to='/' className='text-xs sm:text-md hover:text-gray-400'>Open Collective</Link></li>
-                        </ul>
-                    </div> 
-                    */}
                     <div>
                         <h5 className='font-bold text-md sm:text-xl mb-4'>Support</h5>
                         <ul className='sm:space-y-2'>

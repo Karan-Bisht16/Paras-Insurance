@@ -1,19 +1,20 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useContext, useEffect, useState } from 'react';
 import { Button, Container, ListItemText } from '@mui/material';
 import { AccountBalanceWallet, CheckCircleOutline, SupervisorAccount, TrendingDown, Update } from '@mui/icons-material';
 import { tailChase } from 'ldrs';
 // importing api end-points
-import { createSip, fetchProfileData, uploadSipMedia } from '../api';
+import { createSip, fetchProfileData, findClient, login, register, uploadSipMedia } from '../api';
+// importing contexts
+import { ClientContext } from '../contexts/Client.context';
+import { SnackBarContext } from '../contexts/SnackBar.context';
 // importing components
 import UpdateProfileForm from '../components/UpdateProfileForm';
 import FeatureCard from '../components/subcomponents/FeatureCard';
-import Footer from '../components/Footer';
 // importing content
 import content from "../content.json";
+import RegisterModal from '../components/subcomponents/RegisterModal';
 
 const SIP = () => {
-    const { id } = useParams();
     const features = [
         {
             icon: AccountBalanceWallet,
@@ -38,6 +39,9 @@ const SIP = () => {
     ];
     const benefits = content['benefits'];
 
+    const { isLoggedIn, setIsLoggedIn, condenseClientInfo, setCondenseClientInfo } = useContext(ClientContext);
+    const { setSnackbarState, setSnackbarValue } = useContext(SnackBarContext);
+
     const [isLoadingClientData, setIsLoadingClientData] = useState(true);
     const [isUnauthorisedAction, setIsUnauthorisedAction] = useState(false);
     const [isClientDataFound, setIsClientDataFound] = useState(true);
@@ -45,7 +49,7 @@ const SIP = () => {
 
     const getClientData = async () => {
         try {
-            const { data } = await fetchProfileData({ clientId: id });
+            const { data } = await fetchProfileData({ clientId: condenseClientInfo._id });
             const { personalDetails, financialDetails, employmentDetails } = data;
             setClientData({ personalDetails, financialDetails, employmentDetails });
             setIsLoadingClientData(false);
@@ -65,8 +69,53 @@ const SIP = () => {
     }
     useEffect(() => {
         window.scrollTo(0, 0);
-        getClientData();
-    }, [id]);
+        if (isLoggedIn) {
+            getClientData();
+        } else {
+            setClientData({
+                personalDetails: {
+                    firstName: "",
+                    lastName: "",
+                    gender: "",
+                    contact: {
+                        email: "",
+                        phone: ""
+                    },
+                    address: {
+                        street: "",
+                        city: "",
+                        state: "",
+                        pincode: "",
+                        country: ""
+                    },
+                    nominee: {
+                        name: "",
+                        dob: "",
+                        relationship: "",
+                        phone: ""
+                    },
+                },
+                financialDetails: {
+                    accountDetails: {
+                        accountNo: "",
+                        ifscCode: "",
+                        bankName: "",
+                        cancelledChequeURL: ""
+                    },
+                    panCardNo: "",
+                    panCardURL: "",
+                    aadhaarNo: "",
+                    aadhaarURL: ""
+                },
+                employmentDetails: {
+                    companyName: "",
+                    designation: "",
+                    annualIncome: ""
+                },
+            });
+            setIsLoadingClientData(false);
+        }
+    }, []);
 
     const [isUpdateProfileOpen, setIsUpdateProfileOpen] = useState(false);
     const openUpdateProfile = () => {
@@ -75,18 +124,86 @@ const SIP = () => {
     const closeUpdateProfile = () => {
         setIsUpdateProfileOpen(false);
     }
+
+    const [sipFormData, setSipFormData] = useState({});
     const handleAddSip = async (formData, removedFiles, files) => {
         try {
-            const { status, data } = await createSip({ formData, removedFiles, id });
-            if (status === 200) {
-                const { status, data } = await uploadSipMedia({ ...files, sipId: data._id });
+            setSipFormData({ formData, removedFiles, files })
+            if (isLoggedIn) {
+                const { status, data } = await createSip({ formData, removedFiles, id: condenseClientInfo._id });
                 if (status === 200) {
+                    await uploadSipMedia({ ...files, sipId: data._id });
+                    setSnackbarValue({ message: 'SIP added to your account per your interest!', status: 'success' });
+                    setSnackbarState(true);
                     return false;
                 }
+            } else {
+                try {
+                    const { data } = await findClient({ email: formData?.personalDetails?.contact?.email, phone: formData?.personalDetails?.contact?.phone });
+                    setEmailOrPhone(data);
+                    setLoginOrRegister('Login');
+                } catch (error) {
+                    const { status } = error;
+                    if (status === 404) setLoginOrRegister('Register');
+                }
+                setShowRegisterModal(true);
+                return true;
             }
         } catch (error) {
             const errorMessage = error?.response?.data?.message;
             return errorMessage;
+        }
+    }
+
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const [emailOrPhone, setEmailOrPhone] = useState('');
+    const [loginOrRegister, setLoginOrRegister] = useState('');
+    const [regiserModalError, setRegisterModalError] = useState('');
+    const handleLogin = async (password) => {
+        try {
+            setRegisterModalError('');
+
+            if (loginOrRegister === 'Login') {
+                const { data } = await login({ emailOrPhone, password });
+                await setCondenseClientInfo(data);
+                await setIsLoggedIn(true);
+                await setShowRegisterModal(false);
+
+                const result = await createSip({
+                    formData: sipFormData?.formData,
+                    removedFiles: sipFormData?.removedFiles,
+                    id: data?._id
+                });
+                if (result.status === 200) {
+                    await uploadSipMedia({ ...sipFormData?.files, sipId: result?.data?._id });
+                }
+            } else if (loginOrRegister === 'Register') {
+                const { data } = await register({
+                    firstName: sipFormData?.formData?.personalDetails?.firstName,
+                    lastName: sipFormData?.formData?.personalDetails?.lastName || '',
+                    email: sipFormData?.formData?.personalDetails?.contact?.email,
+                    phone: sipFormData?.formData?.personalDetails?.contact?.phone,
+                    password
+                });
+                await setCondenseClientInfo(data);
+                await setIsLoggedIn(true);
+                await setShowRegisterModal(false);
+
+                const result = await createSip({
+                    formData: sipFormData?.formData,
+                    removedFiles: sipFormData?.removedFiles,
+                    id: data?._id
+                });
+                if (result.status === 200) {
+                    await uploadSipMedia({ ...sipFormData?.files, sipId: result?.data?._id });
+                }
+            }
+            setSnackbarValue({ message: 'SIP added to your account per your interest!', status: 'success' });
+            setSnackbarState(true);
+            closeUpdateProfile();
+            return false;
+        } catch (error) {
+            setRegisterModalError(error?.response?.data?.message);
         }
     }
 
@@ -214,15 +331,22 @@ const SIP = () => {
                         </div>
             }
 
-            <Footer />
             {isUpdateProfileOpen &&
                 <UpdateProfileForm
                     clientData={clientData}
                     closeUpdateProfile={closeUpdateProfile}
                     onSubmit={handleAddSip}
                     label='Start a SIP'
+                    excludeEmployementDetails={true}
                 />
             }
+            <RegisterModal
+                loginOrRegister={loginOrRegister}
+                isOpen={showRegisterModal}
+                onClose={() => setShowRegisterModal(false)}
+                onSubmit={handleLogin}
+                error={regiserModalError}
+            />
         </div>
     );
 }

@@ -1,11 +1,16 @@
 import express from 'express';
-import { addEmployee, createEmployee, removeEmployeeAccess, fetchAllEmployees } from '../controllers/employee.controller.js';
+import auth from '../middleware/auth.middleware.js';
+import { addEmployee, createEmployee, removeEmployeeAccess, fetchAllEmployees, editEmployee } from '../controllers/employee.controller.js';
 
 const router = express.Router();
 
-router.post('/create', createEmployee);
-router.post('/add', addEmployee);
-router.delete('/removeAccess', removeEmployeeAccess);
-router.get('/fetchAll', fetchAllEmployees);
+// create
+router.post('/create', auth, createEmployee);
+router.post('/add', auth, addEmployee);
+// read
+router.get('/fetchAll', auth, fetchAllEmployees);
+// update
+router.put('/edit', auth, editEmployee);
+router.delete('/removeAccess', auth, removeEmployeeAccess);
 
 export default router;

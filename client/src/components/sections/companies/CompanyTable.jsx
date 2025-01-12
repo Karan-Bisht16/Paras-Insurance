@@ -1,10 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Tooltip } from '@mui/material';
 import { Edit, Delete, FilterAltOutlined, AddCircleOutlineOutlined, SearchOutlined } from '@mui/icons-material';
+// importing api end-points
+import { editCompany } from '../../../api';
+// importing contexts
+import { SnackBarContext } from '../../../contexts/SnackBar.context';
 // importing components
 import CompanyPolicyModal from './CompanyPolicyModal';
+import CompanyForm from './CompanyForm';
 
-const CompanyTable = ({ companiesData, onAddPolicy, onRemovePolicy, onDelete }) => {
+const CompanyTable = ({ companiesData, onAddPolicy, onRemovePolicy, onDelete, reload }) => {
+    const { setSnackbarState, setSnackbarValue } = useContext(SnackBarContext);
     const [selectedPolicy, setSelectedPolicy] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('ALL');
@@ -38,13 +44,50 @@ const CompanyTable = ({ companiesData, onAddPolicy, onRemovePolicy, onDelete }) 
         setCurrentPage(prev => Math.max(prev - 1, 1));
     };
 
+    const [showEditCompanyForm, setShowEditCompanyForm] = useState(false);
+    const [editCompanyFormData, setEditCompanyFormData] = useState({
+        companyName: '',
+        companyType: 'Corporate',
+        companyStatus: 'Active',
+        companyDescription: '',
+        companyRegistrationNo: '',
+        companyWebsite: '',
+        companyAddress: '',
+    });
+    const handleEditCompanyFormDataChange = (event) => {
+        const { name, value } = event.target;
+        setEditCompanyFormData(prevEditCompanyFormData => ({
+            ...prevEditCompanyFormData, [name]: value
+        }));
+    };
+    const handleOpenEditCompanyForm = (companyData) => {
+        setEditCompanyFormData(companyData);
+        setShowEditCompanyForm(true);
+    }
+    const handleCloseEditCompanyForm = () => {
+        setEditCompanyFormData({});
+        setShowEditCompanyForm(false);
+    }
+
+    const handleEditCompany = async () => {
+        try {
+            await editCompany(editCompanyFormData);
+            setSnackbarValue({ message: 'Company Details updated!', status: 'success' });
+            setSnackbarState(true);
+            reload();
+            return false;
+        } catch (error) {
+            return error?.response?.data?.message;
+        }
+    }
+
     return (
         <div className="space-y-4">
             <div className="flex justify-between mb-4">
                 <div className="flex items-center space-x-2">
                     <input
                         type="text" placeholder="Search by company name, contact person, email, or phone..."
-                        value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                        value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)}
                         className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     />
                     <button className="p-2 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none ">
@@ -53,7 +96,7 @@ const CompanyTable = ({ companiesData, onAddPolicy, onRemovePolicy, onDelete }) 
                 </div>
                 <div className="flex items-center space-x-2">
                     <select
-                        value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
+                        value={filterStatus} onChange={(event) => setFilterStatus(event.target.value)}
                         className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     >
                         <option value="ALL">All Statuses</option>
@@ -132,7 +175,7 @@ const CompanyTable = ({ companiesData, onAddPolicy, onRemovePolicy, onDelete }) 
                                         </button>
                                         <button className="p-1 border border-gray-300 rounded-md shadow-sm text-blue-600 hover:text-blue-900 hover:bg-gray-50 focus:outline-none">
                                             <Tooltip title='Edit details'>
-                                                <Edit />
+                                                <Edit onClick={() => handleOpenEditCompanyForm(company)} />
                                             </Tooltip>
                                         </button>
                                         <button className="p-1 border border-gray-300 rounded-md shadow-sm text-red-600 hover:text-red-900 hover:bg-gray-50 focus:outline-none ">
@@ -176,6 +219,16 @@ const CompanyTable = ({ companiesData, onAddPolicy, onRemovePolicy, onDelete }) 
                     </button>
                 </div>
             </div>
+
+            {showEditCompanyForm &&
+                <CompanyForm
+                    formData={editCompanyFormData}
+                    handleChange={handleEditCompanyFormDataChange}
+                    onClose={handleCloseEditCompanyForm}
+                    onSubmit={handleEditCompany}
+                    label='Edit Details'
+                />
+            }
         </div>
     );
 }

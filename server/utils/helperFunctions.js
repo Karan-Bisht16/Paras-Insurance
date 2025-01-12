@@ -16,7 +16,8 @@ const condenseClientInfo = async (client) => {
         lastName: client.personalDetails.lastName,
         email: client.personalDetails.contact.email,
         phone: client.personalDetails.contact.phone,
-        role: employee ? employee.role : 'Client'
+        role: employee ? (employee.loginAccess ? employee.role : 'AdminAsClient') : 'Client',
+        loginAccess: employee ? employee.loginAccess : true,
     };
     if (employee) {
         return { ...clientSessionObj, employeeId: employee._id };

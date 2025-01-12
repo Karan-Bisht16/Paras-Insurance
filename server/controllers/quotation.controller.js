@@ -1,36 +1,34 @@
 import mongoose from 'mongoose';
 // importing models
+import Client from '../models/client.model.js';
+import Policy from '../models/policy.model.js';
 import Company from '../models/company.model.js';
+import ClientPolicy from '../models/clientPolicy.model.js';
 import Quotation from '../models/quotation.model.js';
 import CombinedQuotation from '../models/combinedQuotation.model.js';
-import ClientPolicy from '../models/clientPolicy.model.js';
 
-function addTransformedArrayTo2DArray(existingArray, inputArray, label) {
-    // Transform the input array
+const addTransformedArrayTo2DArray = (existingArray, inputArray, label) => {
     let transformedArray = [];
 
     inputArray.forEach((row, index) => {
         if (index === 0) {
-            // Add the label to the first row
             transformedArray.push([label, ...row.slice(1)]);
         } else {
-            // Add the remaining rows with the label as empty for the first column
             transformedArray.push(['', ...row.slice(1)]);
         }
     });
 
-    // Add the transformed array to the given 2D array
     existingArray.push(...transformedArray);
 
     return existingArray;
 }
-// working TODO: validation for client and companyId
+// working LATER: validation for client and companyId
 const createQuotation = async (req, res) => {
     try {
         const { formData } = req.body;
         const { clientPolicyId, clientId, companyId, quotationData } = formData;
-        console.log(formData);
-        const q = await Quotation.create({
+
+        await Quotation.create({
             clientPolicyId: new mongoose.Types.ObjectId(clientPolicyId),
             clientId: new mongoose.Types.ObjectId(clientId),
             companyId: new mongoose.Types.ObjectId(companyId),
@@ -38,14 +36,19 @@ const createQuotation = async (req, res) => {
         });
 
         const company = await Company.findById(new mongoose.Types.ObjectId(companyId));
-        const existingQuotation = await CombinedQuotation.findOne({ clientPolicyId: new mongoose.Types.ObjectId(clientPolicyId), clientId: new mongoose.Types.ObjectId(clientId) });
+        const existingQuotation = await CombinedQuotation.findOne({
+            clientPolicyId: new mongoose.Types.ObjectId(clientPolicyId),
+            clientId: new mongoose.Types.ObjectId(clientId)
+        });
+
         let updatedQuotation = [];
         if (existingQuotation.quotationData.length === 0) {
             updatedQuotation = addTransformedArrayTo2DArray([[]], quotationData, company.companyName);
         } else {
             updatedQuotation = addTransformedArrayTo2DArray(existingQuotation.quotationData, quotationData, company.companyName);
         }
-        const result = await CombinedQuotation.findOneAndUpdate(
+
+        const combinedQuotation = await CombinedQuotation.findOneAndUpdate(
             { clientPolicyId: new mongoose.Types.ObjectId(clientPolicyId), clientId: new mongoose.Types.ObjectId(clientId) },
             {
                 $set: { quotationData: updatedQuotation },
@@ -54,16 +57,32 @@ const createQuotation = async (req, res) => {
             { new: true }
         );
 
-        console.log(result);
-        // check if countrecived == total then clientPolicy.quotation me ye combined dal do also status to submitted
-        const { countRecievedQuotations, countTotalEmails } = result;
+        console.log(combinedQuotation);
+        const { countRecievedQuotations, countTotalEmails } = combinedQuotation;
         if (countTotalEmails === countRecievedQuotations) {
-            // sabne fill kar diya
-            // TODO: use combinedQuotationId instead of data
-            await ClientPolicy.findByIdAndUpdate(new mongoose.Types.ObjectId(clientPolicyId), { $set: { quotation: result.quotationData } })
-            // TODO: interactio history add [quotation provided]
+
+            const clientPolicy = await ClientPolicy.findByIdAndUpdate(new mongoose.Types.ObjectId(clientPolicyId), {
+                $set: { quotation: combinedQuotation._id }
+            }, { new: true });
+
+            combinedQuotation.status = 'SentAutomatically';
+            await combinedQuotation.save();
+
+            const policy = await Policy.findById(clientPolicy.policyId);
+            await Client.findByIdAndUpdate(
+                clientId,
+                {
+                    $push: {
+                        interactionHistory: {
+                            type: 'Quotation Recieved',
+                            description: `Excel with quotation for ${policy.policyName} (${policy.policyType}) recieved.`
+                        }
+                    }
+                }
+            );
         }
-        res.sendStatus(200)
+
+        res.sendStatus(200);
     } catch (error) {
         console.error(error);
         res.status(503).json({ message: 'Network error. Try again' })

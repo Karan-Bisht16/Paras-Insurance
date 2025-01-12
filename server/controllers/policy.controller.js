@@ -1,7 +1,7 @@
 // importing models
 import Policy from '../models/policy.model.js';
 
-// working
+// working - POSTMAN only
 const createPolicy = async (req, res) => {
     try {
         const newPolicy = await Policy.create(req.body);

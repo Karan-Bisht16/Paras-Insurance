@@ -1,20 +1,19 @@
 import express from 'express';
-import { addCompanyPolicy, createCompany, deleteCompany, removeCompanyPolicy, fetchAllCompanies, updateCompany, fetchCompanyPoliciesByType, sendCompanyPolicies } from '../controllers/company.controller.js';
+import auth from '../middleware/auth.middleware.js';
+import { addCompanyPolicy, createCompany, deleteCompany, removeCompanyPolicy, fetchAllCompanies, editCompany } from '../controllers/company.controller.js';
 
 const router = express.Router();
 
 // create
-router.post('/create', createCompany);
-router.post('/addPolicy', addCompanyPolicy);
+router.post('/create', auth, createCompany);
 // read
-router.get('/fetchAll', fetchAllCompanies);
+router.get('/fetchAll', auth, fetchAllCompanies);
 // update
-router.put('/update', updateCompany);
+router.put('/edit', auth, editCompany);
 // delete
-router.delete('/delete', deleteCompany);
-router.delete('/removePolicy', removeCompanyPolicy);
+router.delete('/delete', auth, deleteCompany);
 // misc
-router.get('/fetchPolicyByType', fetchCompanyPoliciesByType);
-router.put('/sendCompanyPolicies', sendCompanyPolicies);
+router.post('/addPolicy', auth, addCompanyPolicy);
+router.delete('/removePolicy', auth, removeCompanyPolicy);
 
 export default router;

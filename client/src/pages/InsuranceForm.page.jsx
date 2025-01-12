@@ -3,14 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ExpandMore } from '@mui/icons-material';
 import { tailChase } from 'ldrs';
 // importing api end-points
-import { createClientPolicy, fetchAllPolicyFields, fetchEveryPolicyId } from '../api';
+import { createClientPolicy, fetchAllPolicyFields, fetchEveryPolicyId, findClient, login, register } from '../api';
 // importing contexts
 import { ClientContext } from '../contexts/Client.context';
 // importing components
 import FormSection from '../components/formComponents/FormSection';
 import RegisterModal from '../components/subcomponents/RegisterModal';
 import Footer from '../components/Footer';
-import Background from '../components/Background';
 
 const InsuranceForm = () => {
     const location = useLocation();
@@ -31,8 +30,9 @@ const InsuranceForm = () => {
     }
 
     const [error, setError] = useState('');
+    const [regiserModalError, setRegisterModalError] = useState('');
     const handleError = (error) => {
-        console.log(error);
+        console.error(error);
         if (error.code === 'ERR_NETWORK') {
             setError('Server is down. Please try again later.');
         } else {
@@ -135,8 +135,10 @@ const InsuranceForm = () => {
     }
 
     const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const [emailOrPhone, setEmailOrPhone] = useState('');
+    const [loginOrRegister, setLoginOrRegister] = useState('');
     const handleFormSubmit = async (event) => {
-        event.preventDefault();
+        event?.preventDefault();
 
         try {
             if (isLoggedIn) {
@@ -145,11 +147,18 @@ const InsuranceForm = () => {
                 const { data } = await createClientPolicy({ formData: { ...copyCondenseClientInfo, ...formData }, policyId: currentPolicyId, clientId: condenseClientInfo._id });
                 const { clientInfo } = data;
                 setCondenseClientInfo(clientInfo);
-                navigate('/');
+                navigate('/', { state: { status: 'success', message: 'Policy added to your account per your interest!', time: new Date().getTime() } })
             } else {
                 setFormData(prevFormData => { return { ...prevFormData, ...defaultFormData } });
+                try {
+                    const { data } = await findClient(defaultFormData);
+                    setEmailOrPhone(data);
+                    setLoginOrRegister('Login');
+                } catch (error) {
+                    const { status } = error;
+                    if (status === 404) setLoginOrRegister('Register');
+                }
                 setShowRegisterModal(true);
-                return;
             }
         } catch (error) {
             handleError(error);
@@ -158,14 +167,37 @@ const InsuranceForm = () => {
 
     const handleLogin = async (password) => {
         try {
-            const { data } = await createClientPolicy({ formData: formData, policyId: currentPolicyId, clientId: '', password: password });
-            const { clientInfo } = data;
-            setShowRegisterModal(false);
-            setIsLoggedIn(true);
-            setCondenseClientInfo(clientInfo);
-            navigate('/');
+            setRegisterModalError('');
+
+            if (loginOrRegister === 'Login') {
+                const { data } = await login({ emailOrPhone, password });
+                await setCondenseClientInfo(data);
+                await setIsLoggedIn(true);
+                await setShowRegisterModal(false);
+
+                const copyCondenseClientInfo = structuredClone(data);
+                delete copyCondenseClientInfo._id;
+                const result = await createClientPolicy({ formData: { ...copyCondenseClientInfo, ...formData }, policyId: currentPolicyId, clientId: data._id });
+                const { clientInfo } = result?.data;
+
+                setCondenseClientInfo(clientInfo);
+            } else if (loginOrRegister === 'Register') {
+                const { data } = await register({ ...defaultFormData, password });
+                await setCondenseClientInfo(data);
+                await setIsLoggedIn(true);
+                await setShowRegisterModal(false);
+
+                const copyCondenseClientInfo = structuredClone(data);
+                delete copyCondenseClientInfo._id;
+                const result = await createClientPolicy({ formData: { ...copyCondenseClientInfo, ...formData }, policyId: currentPolicyId, clientId: data._id });
+                const { clientInfo } = result?.data;
+
+                setCondenseClientInfo(clientInfo);
+            }
+
+            navigate('/', { state: { status: 'success', message: 'Policy added to your account per your interest!', time: new Date().getTime() } })
         } catch (error) {
-            handleError(error);
+            setRegisterModalError(error?.response?.data?.message);
         }
     }
 
@@ -268,12 +300,13 @@ const InsuranceForm = () => {
                 </div>
             }
             <RegisterModal
+                loginOrRegister={loginOrRegister}
                 isOpen={showRegisterModal}
                 onClose={() => setShowRegisterModal(false)}
                 onSubmit={handleLogin}
+                error={regiserModalError}
             />
             <Footer />
-            {/* <Background /> */}
         </div>
     );
 }

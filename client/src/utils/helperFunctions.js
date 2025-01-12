@@ -1,11 +1,14 @@
 const toFormattedDate = (timestamp) => {
-    const formattedDate = new Date(Date.parse(timestamp))
-    const date = formattedDate.getDate();
-    const monthsArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const month = monthsArray[formattedDate.getMonth()];
-    const year = formattedDate.getFullYear();
+    if (timestamp) {
+        const formattedDate = new Date(Date.parse(timestamp));
+        const date = formattedDate.getDate();
+        const monthsArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const month = monthsArray[formattedDate.getMonth()];
+        const year = formattedDate.getFullYear();
 
-    return `${date} ${month}, ${year}`;
+        return `${date} ${month}, ${year}`;
+    }
+    return '';
 }
 
 const toFormattedTime = (timestamp) => {
@@ -20,7 +23,25 @@ const toFormattedTime = (timestamp) => {
     return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
 }
 
+const calculateAge = (dobString) => {
+    if (!dobString) {
+        return '-';
+    }
+    const dob = new Date(dobString);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+
+    const isBirthdayPassed =
+        today.getMonth() > dob.getMonth() ||
+        (today.getMonth() === dob.getMonth() && today.getDate() >= dob.getDate());
+
+    if (!isBirthdayPassed) { age-- }
+
+    return age;
+}
+
 export {
     toFormattedDate,
-    toFormattedTime
+    toFormattedTime,
+    calculateAge
 };

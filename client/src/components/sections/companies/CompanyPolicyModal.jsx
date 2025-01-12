@@ -13,21 +13,21 @@ const CompanyPolicyModal = ({ policyData, onClose, onRemovePolicy }) => {
     }
 
     return (
-        <div className="fixed z-[1000] inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" onClick={() => onClose()}>
+        <div className='fixed z-[1000] inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4' onClick={() => onClose()}>
             <div
                 onClick={(event) => event.stopPropagation()}
-                className="bg-white rounded-lg w-full max-w-4xl max-h-[80vh] no-scrollbar overflow-y-scroll"
+                className='bg-white rounded-lg w-full max-w-4xl max-h-[80vh] no-scrollbar overflow-y-scroll'
             >
-                <div className="flex justify-between items-center px-6 py-4 border-b">
-                    <h2 className="text-xl font-semibold">{policy.policyName}</h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+                <div className='flex justify-between items-center px-6 py-4 border-b'>
+                    <h2 className='text-xl font-semibold'>{policy.policyName}</h2>
+                    <button onClick={onClose} className='text-gray-500 hover:text-gray-700'>
                         <Close />
                     </button>
                 </div>
 
-                <div className="px-6 pt-2 pb-6">
-                    <div className="mb-3">
-                        <p className="text-sm text-gray-600">Offered by: <strong>{company.companyName}</strong></p>
+                <div className='px-6 pt-2 pb-6'>
+                    <div className='mb-3'>
+                        <p className='text-sm text-gray-600'>Offered by: <strong>{company.companyName}</strong></p>
                     </div>
 
                     <TextField
@@ -37,18 +37,18 @@ const CompanyPolicyModal = ({ policyData, onClose, onRemovePolicy }) => {
                         className='w-full !mt-2'
                     />
 
-                    <div className="my-2 mx-1">
-                        <h3 className="font-medium">Policy Description:</h3>
+                    <div className='my-2 mx-1'>
+                        <h3 className='font-medium'>Policy Description:</h3>
                         <div className='mx-4'>
-                            <p className="text-gray-600">{policy.policyDescription}</p>
+                            <p className='text-gray-600'>{policy.policyDescription}</p>
                         </div>
                     </div>
 
-                    <div className="mb-5 mx-1">
-                        <h3 className="font-medium">Policy Features:</h3>
+                    <div className='mb-5 mx-1'>
+                        <h3 className='font-medium'>Policy Features:</h3>
                         <div className='mx-4'>
                             {policy.policyFeatures.split(',').map((feature, index) => (
-                                <p key={index} className="text-gray-600">{index + 1}. {feature.trim()}</p>
+                                <p key={index} className='text-gray-600'>{index + 1}. {feature.trim()}</p>
                             ))}
                         </div>
                     </div>
@@ -62,7 +62,7 @@ const CompanyPolicyModal = ({ policyData, onClose, onRemovePolicy }) => {
                         <TextField
                             label='Coverage Amount'
                             slotProps={{ input: { readOnly: true } }}
-                            value={policy.coverageAmount}
+                            value={`₹ ${policy.coverageAmount}`}
                         />
                     </div>
 
@@ -75,7 +75,7 @@ const CompanyPolicyModal = ({ policyData, onClose, onRemovePolicy }) => {
                         <TextField
                             label='Premium Amount'
                             slotProps={{ input: { readOnly: true } }}
-                            value={policy.premiumAmount}
+                            value={`₹ ${policy.premiumAmount}`}
                         />
                     </div>
 
@@ -97,11 +97,11 @@ const CompanyPolicyModal = ({ policyData, onClose, onRemovePolicy }) => {
                         />
                     </div>
 
-                    <div className="mt-2 flex justify-end space-x-3">
+                    <div className='mt-2 flex justify-end space-x-3'>
                         <Button
-                            type="button"
+                            type='button'
                             onClick={handleRemovePolicy}
-                            className="!text-white !bg-gray-900  hover:opacity-95"
+                            className='!text-white !bg-gray-900  hover:opacity-95'
                         >
                             Remove Policy
                         </Button>
