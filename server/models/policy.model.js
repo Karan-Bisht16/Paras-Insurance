@@ -27,12 +27,12 @@ const policySchema = new mongoose.Schema({
     },
     policyType: {
         type: String,
+        enum: ['Life', 'Health', 'Home', 'Travel', 'Vehicle', 'General'],
+        default: 'Life',
         required: true,
     },
     policyDescription: {
         type: String,
-        enum: ['Life', 'Health', 'Home', 'Travel', 'Vehicle', 'General'],
-        default: 'Life',
         required: true,
     },
     policyIcon: {

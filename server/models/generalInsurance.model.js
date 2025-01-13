@@ -26,7 +26,7 @@ const generalInsuranceSchema = new mongoose.Schema({
         },
         gender: {
             type: String,
-            enum: ['Male', 'Female', ''],
+            enum: ['Male', 'Female', 'Other', ''],
             default: '',
         },
         contact: {

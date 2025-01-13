@@ -52,14 +52,17 @@ const clientPolicySchema = new mongoose.Schema({
 clientPolicySchema.post('save', async function (document, next) {
     try {
         const policy = await Policy.findById(document.policyId);
-        await Client.findByIdAndUpdate(document.clientId, {
-            $push: {
-                interactionHistory: {
-                    type: 'Interested in Policy',
-                    description: `Client is interested in ${policy.policyName} policy.`,
+
+        if (policy) {
+            await Client.findByIdAndUpdate(document.clientId, {
+                $push: {
+                    interactionHistory: {
+                        type: 'Interested in Policy',
+                        description: `Client is interested in ${policy.policyName} policy.`,
+                    },
                 },
-            },
-        });
+            });
+        }
     } catch (error) {
         console.error('Error updating client interaction history:', error);
     }

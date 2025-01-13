@@ -118,7 +118,7 @@ const sendQuotationMail = async ({ to, clientPolicyId, clientId, policyId, polic
         countRecievedQuotations: 0,
     });
 
-    const emailTemplate = fs.readFileSync('./assets/quotationEmailTemplate.ejs', 'utf-8');
+    const emailTemplate = fs.readFileSync('./assets/getQuotationEmailTemplate.ejs', 'utf-8');
     for (let i = 0; i < to.length; i++) {
         const emailContent = ejs.render(emailTemplate, {
             formLink: `${process.env.FRONT_END_URL}/companyForm/${clientId}/${clientPolicyId}/${to[i]._id}`,
@@ -589,6 +589,7 @@ const uploadExisitingClientPolicy = async (req, res) => {
         res.status(503).json({ message: 'Network error. Try again' });
     }
 };
+// working
 const uploadExisitingClientPolicyMedia = async (req, res) => {
     try {
         const { clientPolicyId } = req.body;

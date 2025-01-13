@@ -149,13 +149,13 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
     return (
         <>
             {updating &&
-                <div className='fixed !z-[1000] inset-0 bg-black/10 flex justify-center items-center'>
+                <div className='fixed !z-[2000] inset-0 bg-black/10 flex justify-center items-center'>
                     <CircularProgress />
                 </div>
             }
-            <div onClick={closeUpdateProfile} className={`fixed inset-0 ${!isNotClosable && '!z-[1000] bg-gray-600 bg-opacity-50'} flex items-center justify-center`}>
+            <div onClick={closeUpdateProfile} className={`fixed inset-0 !z-[1000] ${!isNotClosable && 'bg-gray-600 bg-opacity-50'} flex items-center justify-center`}>
                 <div onClick={(event) => event.stopPropagation()} className='bg-white rounded-lg shadow-md pb-8'>
-                    <div className="flex justify-between items-center p-6 border-b">
+                    <div className="flex justify-between items-center px-6 py-4 border-b">
                         <h2 className="text-xl font-semibold">{label}</h2>
                         {!isNotClosable &&
                             <button onClick={closeUpdateProfile} className="text-gray-500 hover:text-gray-700">
@@ -422,7 +422,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                             </div>
                                             :
                                             <div className='flex justify-center'>
-                                                <TextField label="cancelled Cheque"
+                                                <input
                                                     type="file" name="cancelledCheque" id="cancelledChequeFileUpload"
                                                     multiple={false} accept=".pdf, image/*" onChange={handleFileUpload}
                                                     className="border p-2 rounded opacity-0 absolute -z-10"

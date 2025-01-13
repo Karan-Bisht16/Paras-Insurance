@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 // importing models
 import Policy from '../models/policy.model.js';
 
@@ -14,7 +15,11 @@ const createPolicy = async (req, res) => {
 // working
 const fetchAllPolicies = async (req, res) => {
     try {
-        const policies = await Policy.find({}, { form: 0, dataFormat: 0, createdAt: 0, updatedAt: 0, __v: 0 });
+        // const policies = await Policy.find({}, { form: 0, dataFormat: 0, createdAt: 0, updatedAt: 0, __v: 0 });
+        const policies = await Policy.find(
+            { _id: { $ne: new ObjectId('6777932ef2013d3cfcc27347') } },
+            { form: 0, dataFormat: 0, createdAt: 0, updatedAt: 0, __v: 0 }
+        );
         res.status(200).json(policies);
     } catch (error) {
         console.log(error);
@@ -34,7 +39,11 @@ const fetchAllPolicyFields = async (req, res) => {
 }
 // working
 const fetchEveryPolicyId = async (req, res) => {
-    const everyPolicyId = await Policy.find({}, { _id: 1, policyName: 1 });
+    const everyPolicyId = await Policy.find(
+        { _id: { $ne: new ObjectId('6777932ef2013d3cfcc27347') } },
+        { _id: 1, policyName: 1 }
+    );
+    // const everyPolicyId = await Policy.find({}, { _id: 1, policyName: 1 });
     res.status(200).json(everyPolicyId);
 }
 

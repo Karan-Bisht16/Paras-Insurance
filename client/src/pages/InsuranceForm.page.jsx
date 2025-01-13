@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { CircularProgress } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
 import { tailChase } from 'ldrs';
 // importing api end-points
@@ -9,8 +10,6 @@ import { ClientContext } from '../contexts/Client.context';
 // importing components
 import FormSection from '../components/formComponents/FormSection';
 import RegisterModal from '../components/subcomponents/RegisterModal';
-import Footer from '../components/Footer';
-import { CircularProgress } from '@mui/material';
 
 const InsuranceForm = () => {
     const location = useLocation();
@@ -331,7 +330,6 @@ const InsuranceForm = () => {
                 onSubmit={handleLogin}
                 error={regiserModalError}
             />
-            <Footer />
         </div>
     );
 }

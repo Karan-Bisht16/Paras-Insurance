@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 const CheckboxField = ({ label, id, name, required, children, data, handleFormDataChange, repeat, repeatIndex }) => {
-    // TODO: js for required
+    // LATER: js for required
     const [checkboxValues, setCheckboxValues] = useState([]);
     const handleCheckboxValues = async (event) => {
         const { value } = event.target;
@@ -30,7 +30,7 @@ const CheckboxField = ({ label, id, name, required, children, data, handleFormDa
         <div className="form-field">
             <fieldset>
                 <legend className="text-sm font-medium text-gray-700 mb-1">
-                    {label}{required && <span className="text-red-600">*</span>}
+                    {label} {required && <span className="text-red-600">*</span>}
                 </legend>
                 <div className="space-y-2">
                     {repeat

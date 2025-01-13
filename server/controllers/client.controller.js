@@ -9,6 +9,8 @@ import { Parser } from '@json2csv/plainjs';
 import Client from '../models/client.model.js';
 import Employee from '../models/employee.model.js';
 import ClientPolicy from '../models/clientPolicy.model.js';
+import SIP from '../models/sip.model.js';
+import GeneralInsurance from '../models/generalInsurance.model.js';
 // importing helper functions
 import { condenseClientInfo, cookiesOptions, generateAccessAndRefreshTokens, transporter } from '../utils/helperFunctions.js';
 
@@ -480,6 +482,14 @@ const deleteProfile = async (req, res) => {
 
         await Employee.findOneAndDelete({ clientId: clientId });
         await ClientPolicy.deleteMany({
+            clientId: clientId,
+            stage: 'Interested',
+        });
+        await SIP.deleteMany({
+            clientId: clientId,
+            stage: 'Interested',
+        });
+        await GeneralInsurance.deleteMany({
             clientId: clientId,
             stage: 'Interested',
         });
