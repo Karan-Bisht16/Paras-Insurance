@@ -1,23 +1,36 @@
-import { useState } from 'react';
+// import { useContext, useState } from 'react';
 import { Phone, Mail, Facebook, Twitter } from '@mui/icons-material';
+// importing api end-points
+// import { createCallback } from '../api';
+// importing contexts
+// import { SnackBarContext } from '../contexts/SnackBar.context';
 // importing assets
 import imgContactUs from '../assets/img-contactUs.svg';
 
-export default function ContactForm() {
-    const [formData, setFormData] = useState({
-        name: '',
-        phone: '',
-        message: ''
-    })
+// LATER:  add in client notes and create client is necessary
+const ContactForm = () => {
+    // const { setSnackbarState, setSnackbarValue } = useContext(SnackBarContext);
 
-    const handleChange = (event) => {
-        const { name, value } = event.target;
-        setFormData({ ...formData, [name]: value });
-    }
-    const handleSubmit = (event) => {
-        event.preventDefault()
-        // TODO: handle contact us form
-    }
+    // const [formData, setFormData] = useState({
+    //     name: '',
+    //     phone: '',
+    //     message: ''
+    // });
+
+    // const handleChange = (event) => {
+    //     const { name, value } = event.target;
+    //     setFormData({ ...formData, [name]: value });
+    // }
+    // const handleSubmit = async (event) => {
+    //     event.preventDefault();
+    //     try {
+    //         await createCallback({ formData });
+    //         setSnackbarValue({ message: 'Callback requested', status: 'success' });
+    //     } catch (error) {
+    //         setSnackbarValue({ message: error?.response?.data.message, status: 'error' });
+    //     }
+    //     setSnackbarState(true);
+    // }
 
     return (
         <div className="min-h-[90vh] relative bg-white overflow-hidden">
@@ -30,15 +43,17 @@ export default function ContactForm() {
             </div>
 
             <div className="relative">
-                <div className="max-w-5xl mx-auto px-6 py-12">
+                <div className="max-w-xl mx-auto px-6 py-12">
                     <div className="bg-white rounded-lg shadow-xl p-8 relative">
-                        <div className="grid md:grid-cols-2 gap-12">
+                        <div className="grid md:grid-cols-1 gap-12">
                             <div>
                                 <h1 className='text-3xl text-left font-semibold'>
                                     Get In Touch
                                 </h1>
-                                <p className="text-gray-600 mb-8">We are here for you! How can we help?</p>
+                                {/* <p className="text-gray-600 mb-8">We are here for you! How can we help?</p> */}
+                                <p className="text-gray-600">We are here for you! How can we help?</p>
 
+                                {/* 
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     <div>
                                         <input
@@ -66,7 +81,8 @@ export default function ContactForm() {
                                         className="w-full bg-[#111827] text-white py-3 rounded-lg hover:bg-gray-800 transition duration-300"
                                     >Submit
                                     </button>
-                                </form>
+                                </form> 
+                                */}
                             </div>
 
                             <div className="relative flex flex-col items-center justify-center">
@@ -103,3 +119,4 @@ export default function ContactForm() {
     )
 }
 
+export default ContactForm;

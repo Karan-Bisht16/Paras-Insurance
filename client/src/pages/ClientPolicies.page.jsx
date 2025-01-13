@@ -6,7 +6,7 @@ import Spreadsheet from 'react-spreadsheet';
 import * as XLSX from "xlsx";
 import { tailChase } from 'ldrs';
 // importing api end-points
-import { fetchSips, fetchPoliciesData, fetchGeneralInsurances } from '../api';
+import { fetchSips, fetchPoliciesData, fetchGeneralInsurances, uploadExisitingClientPolicy, uploadExisitingClientPolicyMedia } from '../api';
 // importing contexts
 import { ClientContext } from '../contexts/Client.context';
 import { SnackBarContext } from '../contexts/SnackBar.context';
@@ -147,6 +147,10 @@ const ClientPolicies = () => {
 
     const [error, setError] = useState('');
     const [formData, setFormData] = useState({
+        firstName: condenseClientInfo?.firstName,
+        lastName: condenseClientInfo?.lastName,
+        email: condenseClientInfo?.email,
+        phone: condenseClientInfo?.phone,
         expiryDate: '',
         policyNo: ''
     });
@@ -161,30 +165,24 @@ const ClientPolicies = () => {
             return { ...prevFiles, 'policyDocument': file }
         });
     }
-    const [assignPolicyID, setAssignPolicyID] = useState(null);
     const [isAssignPolicyModalOpen, setIsAssignPolicyModalOpen] = useState(false);
-    const openAssignPolicyModal = (id) => {
-        setAssignPolicyID(id)
+    const openAssignPolicyModal = () => {
         setIsAssignPolicyModalOpen(true);
     }
     const closeAssignPolicyModal = () => {
         setIsAssignPolicyModalOpen(false);
-        setAssignPolicyID(null)
         setPolicyDocument('');
         setFormData({ expiryDate: '', policyNo: '' });
     }
 
     const handleSubmit = async () => {
         event.preventDefault();
+        setError('');
         try {
-            setError('');
-            // const { status } = await uploadExisitingClientPolicy({ clientPolicyID, formData });
-            // TODO: make function uploadExisitingClientPolicy then send data in backend; no policyType
-            // if (status === 200) {
-            //     await uploadAssignClientPolicyMedia({ ...policyDocument, clientPolicyID })
-            //     getAllUnassignedPolicies();
-            //     setSnackbarValue({ message: 'Policy Assigned!', status: 'success' });
-            // }
+            const { data } = await uploadExisitingClientPolicy({ formData });
+            await uploadExisitingClientPolicyMedia({ ...policyDocument, clientPolicyId: data?._id })
+            getClientPoliciesAndSipsAndGeneralInsurances();
+            setSnackbarValue({ message: 'Policy Assigned!', status: 'success' });
             setSnackbarState(true);
             closeAssignPolicyModal();
         } catch (error) {
@@ -581,7 +579,7 @@ const ClientPolicies = () => {
                                     formData={formData}
                                     onFormDataChange={handleFormDataChange}
                                     onDocumentUpload={handleDocumentUpload}
-                                    tabIndex={0}
+                                    tabIndex={3}
                                     error={error}
                                 />
                             }

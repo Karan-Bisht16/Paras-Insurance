@@ -135,7 +135,7 @@ const Dashboard = () => {
                 </h1>
                 <Tabs
                     value={tabIndex} onChange={handleTabIndexChange} TabIndicatorProps={{ style: { background: "#111827" } }}
-                    className='absolute translate-x-[75%] bg-white rounded-t-xl'
+                    className='absolute translate-x-[83%] bg-white rounded-t-xl'
                 >
                     <Tab label='Policies' className='!px-8 !py-4 !text-gray-900' />
                     <Tab label='SIP(s)' className='!px-8 !py-4 !text-gray-900' />

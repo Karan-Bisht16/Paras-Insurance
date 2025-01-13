@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, CircularProgress, Step, StepLabel, Stepper } from '@mui/material';
+import { Button, CircularProgress, Step, StepLabel, Stepper, TextField } from '@mui/material';
 import { Close, Delete, ExpandMore, OpenInNew, Upload } from '@mui/icons-material';
 // importing api end-points
 import { fetchEveryPolicyId } from '../api';
@@ -181,17 +181,19 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                             <section className="mb-4">
                                 <h3 className="block text-sm font-medium text-gray-700 mb-2">Personal Details</h3>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                    <input
+                                    <TextField label="First Name"
+                                        InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                                         type="text" name="firstName" placeholder="First Name*" required={true}
                                         value={formData.personalDetails?.firstName} onChange={(e) => handleChange(e, 'personalDetails')}
                                         className="border p-2 rounded"
                                     />
-                                    <input
+                                    <TextField label="Last Name"
                                         type="text" name="lastName" placeholder="Last Name"
                                         value={formData.personalDetails?.lastName} onChange={(e) => handleChange(e, 'personalDetails')}
                                         className="border p-2 rounded"
                                     />
-                                    <input
+                                    <TextField
+                                        InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                                         type="date" name="dob" required={true}
                                         value={formData.personalDetails?.dob ? formData.personalDetails?.dob.split('T')[0] : ''} onChange={(e) => handleChange(e, 'personalDetails')}
                                         className="border p-2 rounded"
@@ -207,12 +209,14 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                     </select>
                                 </div>
                                 <div className=" mt-2 grid grid-cols-2 sm:grid-cols-2 gap-2">
-                                    <input
+                                    <TextField label="Email"
+                                        InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                                         type="email" name="email" placeholder="Email*" required={true}
                                         value={formData.personalDetails?.contact?.email} onChange={(e) => handleChange(e, 'personalDetails', 'contact')}
                                         className="border p-2 rounded"
                                     />
-                                    <input
+                                    <TextField label="Number"
+                                        InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                                         type="tel" name="phone" placeholder="Phone*" required={true}
                                         value={formData.personalDetails?.contact?.phone} onChange={(e) => handleChange(e, 'personalDetails', 'contact')}
                                         className="border p-2 rounded"
@@ -221,30 +225,28 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                 <div className="mt-4">
                                     <h4 className="block text-sm font-medium text-gray-700 mb-2">Residence Details</h4>
                                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                                        <input
+                                        <TextField label="Street"
                                             type="text" name="street" placeholder="Street"
                                             value={formData.personalDetails?.address?.street} onChange={(e) => handleChange(e, 'personalDetails', 'address')}
                                             className="border p-2 rounded"
                                         />
-                                        <input
+                                        <TextField label="City"
                                             type="text" name="city" placeholder="City"
                                             value={formData.personalDetails?.address?.city} onChange={(e) => handleChange(e, 'personalDetails', 'address')}
                                             className="border p-2 rounded"
                                         />
-                                        <input
+                                        <TextField label="State"
                                             type="text" name="state" placeholder="State"
                                             value={formData.personalDetails?.address?.state} onChange={(e) => handleChange(e, 'personalDetails', 'address')}
                                             className="border p-2 rounded"
                                         />
-                                        <input
-                                            type="text"
-                                            name="country"
-                                            placeholder="Country"
+                                        <TextField label="Country"
+                                            type="text" name="country" placeholder="Country"
                                             value={formData.personalDetails?.address?.country}
                                             onChange={(e) => handleChange(e, 'personalDetails', 'address')}
                                             className="border p-2 rounded"
                                         />
-                                        <input
+                                        <TextField label="Pincode"
                                             type="text" name="pincode" placeholder="PINCODE"
                                             value={formData.personalDetails?.address?.pincode} onChange={(e) => handleChange(e, 'personalDetails', 'address')}
                                             className="border p-2 rounded"
@@ -254,12 +256,12 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                 <div className="mt-4">
                                     <h4 className="block text-sm font-medium text-gray-700 mb-2">Nominee Details</h4>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                        <input
+                                        <TextField label="Nominee Name"
                                             type="text" name="name" placeholder="Nominee Name"
                                             value={formData.personalDetails?.nominee?.name} onChange={(e) => handleChange(e, 'personalDetails', 'nominee')}
                                             className="border p-2 rounded"
                                         />
-                                        <input
+                                        <TextField label="Nomine Number"
                                             type="tel" name="phone" placeholder="Nominee Phone"
                                             value={formData.personalDetails?.nominee?.phone} onChange={(e) => handleChange(e, 'personalDetails', 'nominee')}
                                             className="border p-2 rounded"
@@ -269,7 +271,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                             value={formData.personalDetails?.nominee?.dob} onChange={(e) => handleChange(e, 'personalDetails', 'nominee')}
                                             className="border p-2 rounded"
                                         />
-                                        <input
+                                        <TextField label="Relationship"
                                             type="text" name="relationship" placeholder="Relationship"
                                             value={formData.personalDetails?.nominee?.relationship} onChange={(e) => handleChange(e, 'personalDetails', 'nominee')}
                                             className="border p-2 rounded"
@@ -283,7 +285,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                     <h3 className="block text-sm font-medium text-gray-700 mb-2">Financial Details</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className='flex gap-2 items-center'>
-                                            <input
+                                            <TextField label='PAN Card Number'
                                                 type="text" name="panCardNo" placeholder="PAN Card Number"
                                                 value={formData.financialDetails?.panCardNo} onChange={(e) => handleChange(e, 'financialDetails')}
                                                 className="w-full border p-2 rounded"
@@ -328,7 +330,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                             }
                                         </div>
                                         <div className='flex gap-2 items-center justify-between'>
-                                            <input
+                                            <TextField label='Aadhar Number'
                                                 type="text" name="aadhaarNo" placeholder="Aadhaar Number"
                                                 value={formData.financialDetails?.aadhaarNo} onChange={(e) => handleChange(e, 'financialDetails')}
                                                 className="w-full border p-2 rounded"
@@ -376,17 +378,17 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                     <div className="mt-4">
                                         <h4 className="block text-sm font-medium text-gray-700 mb-2">Account Details</h4>
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                            <input
+                                            <TextField label="account No"
                                                 type="text" name="accountNo" placeholder="Account Number"
                                                 value={formData.financialDetails?.accountDetails?.accountNo} onChange={(e) => handleChange(e, 'financialDetails', 'accountDetails')}
                                                 className="border p-2 rounded"
                                             />
-                                            <input
+                                            <TextField label="IFSC CODE"
                                                 type="text" name="ifscCode" placeholder="IFSC Code"
                                                 value={formData.financialDetails?.accountDetails?.ifscCode} onChange={(e) => handleChange(e, 'financialDetails', 'accountDetails')}
                                                 className="border p-2 rounded"
                                             />
-                                            <input
+                                            <TextField label='BankName'
                                                 type="text" name="bankName" placeholder="Bank Name"
                                                 value={formData.financialDetails?.accountDetails?.bankName} onChange={(e) => handleChange(e, 'financialDetails', 'accountDetails')}
                                                 className="border p-2 rounded"
@@ -420,7 +422,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                             </div>
                                             :
                                             <div className='flex justify-center'>
-                                                <input
+                                                <TextField label="cancelled Cheque"
                                                     type="file" name="cancelledCheque" id="cancelledChequeFileUpload"
                                                     multiple={false} accept=".pdf, image/*" onChange={handleFileUpload}
                                                     className="border p-2 rounded opacity-0 absolute -z-10"
@@ -442,17 +444,18 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                     <section className="mb-4">
                                         <h3 className="block text-sm font-medium text-gray-700 mb-2">Employment Details</h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                            <input
+                                            <TextField label="Company Name"
                                                 type="text" name="companyName" placeholder="Company Name"
                                                 value={formData.employmentDetails?.companyName} onChange={(e) => handleChange(e, 'employmentDetails')}
                                                 className="border p-2 rounded"
                                             />
-                                            <input
+                                            <TextField label="Designation"
                                                 type="text" name="designation" placeholder="Designation"
                                                 value={formData.employmentDetails?.designation} onChange={(e) => handleChange(e, 'employmentDetails')}
                                                 className="border p-2 rounded"
                                             />
-                                            <input
+                                            <TextField label="Income"
+
                                                 type="text" name="annualIncome" placeholder="Annual Income"
                                                 value={formData.employmentDetails?.annualIncome} onChange={(e) => handleChange(e, 'employmentDetails')}
                                                 className="border p-2 rounded"

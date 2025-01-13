@@ -5,6 +5,7 @@ import RadioField from './fields/RadioField';
 import CheckboxField from './fields/CheckboxField';
 import RepeatField from './fields/RepeatField';
 import SelectField from './fields/SelectField';
+import FileUploadField from './fields/FileUploadField';
 
 const FormField = (props) => {
     switch (props.type) {
@@ -25,6 +26,8 @@ const FormField = (props) => {
             return <RepeatField {...props} />;
         case 'select':
             return <SelectField {...props} />;
+        case 'file':
+            return <FileUploadField {...props} />;
         default:
             return null;
     }

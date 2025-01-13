@@ -193,77 +193,105 @@ const clientPolicyWithClientId = async (res, { policyId, clientId, data, clientD
 const createClientPolicy = async (req, res) => {
     try {
         console.log(req.body);
-        const { policyId, clientId, password, formData } = req.body;
+        const { policyId, clientId, formData } = req.body;
         // this is redundant
-        if (!clientId && password) {
-            let newClientId;
-            const { firstName, lastName, phone, email } = formData;
-            if (email) {
-                const clientCorrespondingToEmail = await Client.findOne({ 'personalDetails.contact.email': email });
-                if (clientCorrespondingToEmail) {
-                    newClientId = clientCorrespondingToEmail._id;
-                    await clientPolicyWithClientId(res, {
-                        policyId,
-                        clientId: newClientId,
-                        data: formData,
-                        clientData: clientCorrespondingToEmail,
-                        isNewClient: false
-                    });
-                    return;
-                }
-            }
-            if (phone) {
-                const clientCorrespondingToPhone = await Client.findOne({ 'personalDetails.contact.phone': phone });
-                if (clientCorrespondingToPhone) {
-                    newClientId = clientCorrespondingToPhone._id;
-                    await clientPolicyWithClientId(res, {
-                        policyId,
-                        clientId: newClientId,
-                        data: formData,
-                        clientData: clientCorrespondingToPhone,
-                        isNewClient: false
-                    });
-                    return;
-                }
-            }
-            const newClient = await Client.create({
-                userType: 'Lead',
-                password: password,
-                personalDetails: {
-                    firstName: firstName,
-                    lastName: lastName,
-                    contact: {
-                        email: email,
-                        phone: phone
-                    },
-                }
-            });
+        // if (!clientId && password) {
+        //     let newClientId;
+        //     const { firstName, lastName, phone, email } = formData;
+        //     if (email) {
+        //         const clientCorrespondingToEmail = await Client.findOne({ 'personalDetails.contact.email': email });
+        //         if (clientCorrespondingToEmail) {
+        //             newClientId = clientCorrespondingToEmail._id;
+        //             await clientPolicyWithClientId(res, {
+        //                 policyId,
+        //                 clientId: newClientId,
+        //                 data: formData,
+        //                 clientData: clientCorrespondingToEmail,
+        //                 isNewClient: false
+        //             });
+        //             return;
+        //         }
+        //     }
+        //     if (phone) {
+        //         const clientCorrespondingToPhone = await Client.findOne({ 'personalDetails.contact.phone': phone });
+        //         if (clientCorrespondingToPhone) {
+        //             newClientId = clientCorrespondingToPhone._id;
+        //             await clientPolicyWithClientId(res, {
+        //                 policyId,
+        //                 clientId: newClientId,
+        //                 data: formData,
+        //                 clientData: clientCorrespondingToPhone,
+        //                 isNewClient: false
+        //             });
+        //             return;
+        //         }
+        //     }
+        //     const newClient = await Client.create({
+        //         userType: 'Lead',
+        //         password: password,
+        //         personalDetails: {
+        //             firstName: firstName,
+        //             lastName: lastName,
+        //             contact: {
+        //                 email: email,
+        //                 phone: phone
+        //             },
+        //         }
+        //     });
 
-            newClientId = newClient._id;
-            await clientPolicyWithClientId(res, {
-                policyId,
-                clientId: newClientId,
-                data: formData,
-                clientData: newClient,
-                isNewClient: true
-            });
-            return;
-        } else {
-            const client = await Client.findById(new ObjectId(clientId));
-            await clientPolicyWithClientId(res, {
-                policyId,
-                clientId: new ObjectId(clientId),
-                data: formData,
-                clientData: client,
-                isNewClient: false
-            });
-            return;
-        }
+        //     newClientId = newClient._id;
+        //     await clientPolicyWithClientId(res, {
+        //         policyId,
+        //         clientId: newClientId,
+        //         data: formData,
+        //         clientData: newClient,
+        //         isNewClient: true
+        //     });
+        //     return;
+        // } else {
+        const client = await Client.findById(new ObjectId(clientId));
+        await clientPolicyWithClientId(res, {
+            policyId,
+            clientId: new ObjectId(clientId),
+            data: formData,
+            clientData: client,
+            isNewClient: false
+        });
+        return;
+        // }
     } catch (error) {
         console.log(error);
         res.status(503).json({ message: 'Network error. Try again' });
     }
 };
+// working
+const uploadClientPolicyMedia = async (req, res) => {
+    try {
+        const { clientPolicyId } = req.body
+        const clientPolicy = await ClientPolicy.findById(clientPolicyId);
+
+        if (!clientPolicy) return res.status(404).json({ message: 'Client policy not found' })
+
+        clientPolicy.data = clientPolicy.data || {};
+
+        req.files?.forEach((file) => {
+            const fieldName = file.fieldname.replace('files[', '').replace(']', '');
+            const fileURL = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
+            clientPolicy.data[fieldName] = fileURL;
+        });
+
+        clientPolicy.markModified('data');
+        await clientPolicy.save();
+
+        console.log(clientPolicy.data);
+
+        // res.status(200).json({ message: 'File URLs updated successfully', data: clientPolicy.data });
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+}
 // working
 const fetchClientPolicy = async (req, res) => {
     try {
@@ -536,6 +564,47 @@ const sendCombinedQuotation = async (req, res) => {
     }
 };
 // working
+const uploadExisitingClientPolicy = async (req, res) => {
+    try {
+        const { firstName, lastName, email, phone, expiryDate, policyNo } = req.body?.formData;
+        const clientId = req.client?._id
+        const clientPolicy = await ClientPolicy.create({
+            clientId: clientId,
+            policyId: new ObjectId('6777932ef2013d3cfcc27347'),
+            data: {
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                phone: phone,
+            },
+            stage: 'Assigned',
+            expiryDate: expiryDate,
+            policyNo: policyNo,
+            origin: 'UploadedByUser',
+        });
+
+        res.status(200).json(clientPolicy);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
+const uploadExisitingClientPolicyMedia = async (req, res) => {
+    try {
+        const { clientPolicyId } = req.body;
+        const file = req.files[0];
+        const clientPolicy = await ClientPolicy.findById(clientPolicyId);
+        if (!clientPolicy) return res.status(404).json({ message: 'Client Policy not found.' });
+
+        clientPolicy.policyDocumentURL = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
+        await clientPolicy.save();
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+}
+// working
 const exportCsv = async (req, res) => {
     try {
         const clientPolicies = await ClientPolicy.find().lean();
@@ -717,6 +786,7 @@ const importCsv = async (req, res) => {
 
 export {
     createClientPolicy,
+    uploadClientPolicyMedia,
     fetchClientPolicy,
     fetchAllUnassignedPolicies,
     fetchAllAssignedPolicies,
@@ -724,6 +794,8 @@ export {
     assignClientPolicy,
     uploadAssignClientPolicyMedia,
     sendCombinedQuotation,
+    uploadExisitingClientPolicy,
+    uploadExisitingClientPolicyMedia,
     exportCsv,
     importCsv,
 };

@@ -3,13 +3,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ExpandMore } from '@mui/icons-material';
 import { tailChase } from 'ldrs';
 // importing api end-points
-import { createClientPolicy, fetchAllPolicyFields, fetchEveryPolicyId, findClient, login, register } from '../api';
+import { createClientPolicy, fetchAllPolicyFields, fetchEveryPolicyId, findClient, login, register, uploadClientPolicyMedia } from '../api';
 // importing contexts
 import { ClientContext } from '../contexts/Client.context';
 // importing components
 import FormSection from '../components/formComponents/FormSection';
 import RegisterModal from '../components/subcomponents/RegisterModal';
 import Footer from '../components/Footer';
+import { CircularProgress } from '@mui/material';
 
 const InsuranceForm = () => {
     const location = useLocation();
@@ -22,11 +23,25 @@ const InsuranceForm = () => {
     const [everyPolicyId, setEveryPolicyId] = useState([]);
     const [formFields, setFormFields] = useState({});
     const [formData, setFormData] = useState({});
+    const [files, setFiles] = useState({});
     const handleFormDataChange = (event) => {
-        const { name, value } = event.target;
-        setFormData(prevFormData => {
-            return { ...prevFormData, [name]: value };
-        });
+        // const { name, value } = event.target;
+        // setFormData(prevFormData => {
+        //     return { ...prevFormData, [name]: value };
+        // });
+        const { name, value, type, files } = event.target;
+
+        if (type === "file") {
+            setFiles((prev) => ({
+                ...prev,
+                [name]: files[0],
+            }));
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+        }
     }
 
     const [error, setError] = useState('');
@@ -137,16 +152,19 @@ const InsuranceForm = () => {
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [emailOrPhone, setEmailOrPhone] = useState('');
     const [loginOrRegister, setLoginOrRegister] = useState('');
+    const [submitting, setSubmitting] = useState(false);
     const handleFormSubmit = async (event) => {
         event?.preventDefault();
-
+        setSubmitting(true);
         try {
             if (isLoggedIn) {
                 const copyCondenseClientInfo = structuredClone(condenseClientInfo);
                 delete copyCondenseClientInfo._id;
                 const { data } = await createClientPolicy({ formData: { ...copyCondenseClientInfo, ...formData }, policyId: currentPolicyId, clientId: condenseClientInfo._id });
-                const { clientInfo } = data;
+                const { clientInfo, newClientPolicy } = data;
+                await uploadClientPolicyMedia({ ...files, clientPolicyId: newClientPolicy._id });
                 setCondenseClientInfo(clientInfo);
+                setSubmitting(false);
                 navigate('/', { state: { status: 'success', message: 'Policy added to your account per your interest!', time: new Date().getTime() } })
             } else {
                 setFormData(prevFormData => { return { ...prevFormData, ...defaultFormData } });
@@ -178,7 +196,8 @@ const InsuranceForm = () => {
                 const copyCondenseClientInfo = structuredClone(data);
                 delete copyCondenseClientInfo._id;
                 const result = await createClientPolicy({ formData: { ...copyCondenseClientInfo, ...formData }, policyId: currentPolicyId, clientId: data._id });
-                const { clientInfo } = result?.data;
+                const { clientInfo, newClientPolicy } = result?.data;
+                await uploadClientPolicyMedia({ ...files, clientPolicyId: newClientPolicy._id });
 
                 setCondenseClientInfo(clientInfo);
             } else if (loginOrRegister === 'Register') {
@@ -190,7 +209,8 @@ const InsuranceForm = () => {
                 const copyCondenseClientInfo = structuredClone(data);
                 delete copyCondenseClientInfo._id;
                 const result = await createClientPolicy({ formData: { ...copyCondenseClientInfo, ...formData }, policyId: currentPolicyId, clientId: data._id });
-                const { clientInfo } = result?.data;
+                const { clientInfo, newClientPolicy } = result?.data;
+                await uploadClientPolicyMedia({ ...files, clientPolicyId: newClientPolicy._id });
 
                 setCondenseClientInfo(clientInfo);
             }
@@ -218,6 +238,11 @@ const InsuranceForm = () => {
                             style={{ clipPath: 'polygon(0 65%, 100% 35%, 100% 100%, 0% 100%)' }}
                         />
                     </div>
+                    {submitting &&
+                        <div className='fixed inset-0 !z-[1000] bg-black/10 flex justify-center items-center'>
+                            <CircularProgress />
+                        </div>
+                    }
                     <div className='max-w-lg w-full space-y-8 relative z-10'>
                         <div className='flex relative items-center'>
                             <select onChange={handleChangeForm} value={currentPolicyId}
