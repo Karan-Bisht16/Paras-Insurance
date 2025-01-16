@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { Checkbox, Tooltip } from '@mui/material';
-import { SearchOutlined } from '@mui/icons-material';
+import { FilterAltOutlined, SearchOutlined } from '@mui/icons-material';
 
 const CallbackTable = ({ callbackData, onResolved }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [filterSource, setFilterSource] = useState('ALL');
     const callbackPerPage = 10;
 
     const filteredCallbacks = useMemo(() => {
@@ -15,9 +16,12 @@ const CallbackTable = ({ callbackData, onResolved }) => {
                 callback.phone?.includes(searchTerm) ||
                 callback.source?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 callback.message?.toLowerCase().includes(searchTerm.toLowerCase());
-            return searchMatch;
+
+            const sourceMatch = filterSource === 'ALL' || callback?.source?.toLowerCase() === filterSource?.toLowerCase();
+
+            return searchMatch && sourceMatch;
         });
-    }, [searchTerm, callbackData]);
+    }, [searchTerm, filterSource, callbackData]);
 
     const totalPages = Math.ceil(filteredCallbacks.length / callbackPerPage);
     const indexOfLastCallback = currentPage * callbackPerPage;
@@ -46,6 +50,17 @@ const CallbackTable = ({ callbackData, onResolved }) => {
                     <button className="p-2 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none">
                         <SearchOutlined className="h-4 w-4" />
                     </button>
+                </div>
+                <div className='flex items-center space-x-2'>
+                    <select
+                        value={filterSource} onChange={(event) => setFilterSource(event.target.value)}
+                        className='px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+                    >
+                        <option value='ALL'>All Sources</option>
+                        <option value='WEBSITE'>Website</option>
+                        <option value='WHATSAPP'>WhatsApp</option>
+                    </select>
+                    <FilterAltOutlined className='h-4 w-4' />
                 </div>
             </div>
             <div className="overflow-x-auto">

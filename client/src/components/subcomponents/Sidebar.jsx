@@ -1,4 +1,4 @@
-import { BusinessRounded, ChevronLeft, ChevronRight, Dashboard, PeopleAlt, Person, Policy } from '@mui/icons-material';
+import { BusinessRounded, ChevronLeft, ChevronRight, ConnectWithoutContact, Dashboard, PeopleAlt, Person, Policy } from '@mui/icons-material';
 
 const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Dashboard },
@@ -6,7 +6,7 @@ const menuItems = [
     { id: 'clients', label: 'Client Management', icon: PeopleAlt },
     { id: 'companies', label: 'Company Management', icon: BusinessRounded },
     { id: 'employee', label: 'Employee Management', icon: Person },
-    { id: 'callback', label: 'Request Callback', icon: Person },
+    { id: 'callback', label: 'Request Callback', icon: ConnectWithoutContact },
 ];
 
 const Sidebar = ({ isCollapsed, toggleSidebar, activeSection, setActiveSection }) => {

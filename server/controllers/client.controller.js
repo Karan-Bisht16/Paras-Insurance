@@ -1016,7 +1016,7 @@ export {
     fetchAllRequestCallbacks,
     resolveRequestCallback,
 };
-
+// obsolete
 // const requestCallbackViaWhatsApp = async (req, res) => {
 //     try {
 //         const { name, phone, message } = req.query;
