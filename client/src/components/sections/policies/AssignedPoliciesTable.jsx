@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Button, CircularProgress, Tooltip } from '@mui/material';
-import { OpenInNew, SearchOutlined, SystemUpdateAlt, Visibility } from '@mui/icons-material';
+import { Edit, OpenInNew, SearchOutlined, SystemUpdateAlt, Visibility } from '@mui/icons-material';
 // importing api end-points
-import { toFormattedDate } from '../../../utils/helperFunctions';
+import { exportClientPolicyCsv, sendCombinedQuotation, updateClientPolicy, uploadUpdateClientPolicyMedia } from '../../../api';
 // importing components
+import EditPolicyModal from '../../subcomponents/EditPolicyModal';
 import PolicyDetailModal from '../../subcomponents/PolicyDetailModal';
-import { exportClientPolicyCsv } from '../../../api';
+// importing helper functions
+import { toFormattedDate } from '../../../utils/helperFunctions';
 
 const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -64,6 +66,36 @@ const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
         setExportingCsv(false);
     };
 
+    const [isPolicySelectedForEdit, setIsPolicySelectedForEdit] = useState(false);
+    const [selectedPolicyForEdit, setSelectedPolicyForEdit] = useState({});
+    const [selectedPolicyFieldsForEdit, setSelectedPolicyFieldsForEdit] = useState({});
+    const [selectedPolicyId, setSelectedPolicyId] = useState('');
+    const handleOpenPolicyForEdit = (policyData) => {
+        setSelectedPolicyId(policyData._id);
+        setSelectedPolicyForEdit(policyData.data);
+        setSelectedPolicyFieldsForEdit(policyData.format?.policyForm);
+        setIsPolicySelectedForEdit(true);
+    };
+    const handleClosePolicyForEdit = () => {
+        setSelectedPolicyId('');
+        setSelectedPolicyForEdit({});
+        setSelectedPolicyFieldsForEdit({});
+        setIsPolicySelectedForEdit(false);
+    };
+
+    const handleEditPolicySubmit = async ({ formData, files }) => {
+        try {
+            const { status } = await updateClientPolicy({ formData, selectedPolicyId });
+            if (status === 200) {
+                await uploadUpdateClientPolicyMedia({ ...files, selectedPolicyId: selectedPolicyId });
+            }
+            reload();
+            return false;
+        } catch (error) {
+            return error?.response?.data?.message;
+        }
+    }
+
     return (
         <div className="space-y-4">
             <div className="flex justify-between mb-4">
@@ -113,7 +145,7 @@ const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
                                 Assigned On
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Details
+                                Actions
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Assigned By
@@ -147,9 +179,14 @@ const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
                                     <div className="text-sm text-gray-500">{toFormattedDate(policy.createdAt)}</div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                    <button className="text-blue-600 hover:text-blue-900">
+                                    <button className="text-gray-600 hover:text-blue-900 mr-2">
                                         <Tooltip title='View policy details'>
                                             <Visibility onClick={() => handleSelectPolicy(policy)} />
+                                        </Tooltip>
+                                    </button>
+                                    <button className="p-1 border border-gray-300 rounded-md shadow-sm text-blue-600 hover:text-blue-900 ml-1 focus:outline-none">
+                                        <Tooltip title='View policy details'>
+                                            <Edit onClick={() => handleOpenPolicyForEdit(policy)} />
                                         </Tooltip>
                                     </button>
                                 </td>
@@ -187,6 +224,16 @@ const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
                     <PolicyDetailModal
                         selectedPolicy={selectedPolicy}
                         closeModal={() => setIsPolicySelected(false)}
+                    />
+                }
+
+                {isPolicySelectedForEdit &&
+                    <EditPolicyModal
+                        formFields={selectedPolicyFieldsForEdit}
+                        formData={selectedPolicyForEdit}
+                        setFormData={setSelectedPolicyForEdit}
+                        onSubmit={handleEditPolicySubmit}
+                        onClose={handleClosePolicyForEdit}
                     />
                 }
             </div>

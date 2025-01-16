@@ -22,6 +22,21 @@ const createGeneralInsurance = async (req, res) => {
             stage: 'Interested'
         });
 
+        const client = await Client.findByIdAndUpdate(
+            id,
+            {
+                $push: {
+                    interactionHistory: {
+                        type: 'General Insurance Requested',
+                        description: 'A request for General Insurance has been submitted.',
+                    },
+                }
+            },
+            { new: true }
+        );
+
+        if (!client) return res.status(404).json({ message: 'Client not found.' });
+
         res.status(200).json(generalInsurance);
     } catch (error) {
         console.error(error);

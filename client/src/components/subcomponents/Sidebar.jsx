@@ -6,6 +6,7 @@ const menuItems = [
     { id: 'clients', label: 'Client Management', icon: PeopleAlt },
     { id: 'companies', label: 'Company Management', icon: BusinessRounded },
     { id: 'employee', label: 'Employee Management', icon: Person },
+    { id: 'callback', label: 'Request Callback', icon: Person },
 ];
 
 const Sidebar = ({ isCollapsed, toggleSidebar, activeSection, setActiveSection }) => {

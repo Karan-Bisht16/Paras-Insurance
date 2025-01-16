@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, CircularProgress, Step, StepLabel, Stepper, TextField } from '@mui/material';
+import { Button, CircularProgress, MenuItem, Step, StepLabel, Stepper, TextField } from '@mui/material';
 import { Close, Delete, ExpandMore, OpenInNew, Upload } from '@mui/icons-material';
 // importing api end-points
 import { fetchEveryPolicyId } from '../api';
 
-// TODO: add TextField
 const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSubmit, label, includePolicyType, excludeEmployementDetails }) => {
     const [error, setError] = useState('');
 
@@ -60,6 +59,8 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                 setError('Email is mandatory');
             } else if (formData?.personalDetails?.contact?.phone?.trim() === '') {
                 setError('Phone is mandatory');
+            } else if (formData?.personalDetails?.dob === null) {
+                setError('Date of Birth is mandatory');
             } else {
                 setActiveStep(1)
             }
@@ -153,8 +154,11 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                     <CircularProgress />
                 </div>
             }
-            <div onClick={closeUpdateProfile} className={`fixed inset-0 !z-[1000] ${!isNotClosable && 'bg-gray-600 bg-opacity-50'} flex items-center justify-center`}>
-                <div onClick={(event) => event.stopPropagation()} className='bg-white rounded-lg shadow-md pb-8'>
+            <div onClick={closeUpdateProfile} className={`fixed inset-0 ${!isNotClosable && '!z-[1000] bg-gray-600 bg-opacity-50'} flex items-center justify-center`}>
+                <div
+                    onClick={(event) => event.stopPropagation()}
+                    className='bg-white rounded-lg shadow-md pb-4'
+                >
                     <div className="flex justify-between items-center px-6 py-4 border-b">
                         <h2 className="text-xl font-semibold">{label}</h2>
                         {!isNotClosable &&
@@ -176,106 +180,97 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                         }
                     </div>
 
-                    <form onSubmit={handleSubmit} className="w-[65vw] mx-auto px-6 py-4">
+                    <form onSubmit={handleSubmit} className="w-[65vw] mx-auto px-6 py-2">
                         {(activeStep === 0) &&
                             <section className="mb-4">
                                 <h3 className="block text-sm font-medium text-gray-700 mb-2">Personal Details</h3>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                    <TextField label="First Name"
+                                    <TextField
+                                        label="First Name" type="text" name="firstName" required={true}
                                         InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
-                                        type="text" name="firstName" placeholder="First Name*" required={true}
                                         value={formData.personalDetails?.firstName} onChange={(e) => handleChange(e, 'personalDetails')}
-                                        className="border p-2 rounded"
-                                    />
-                                    <TextField label="Last Name"
-                                        type="text" name="lastName" placeholder="Last Name"
-                                        value={formData.personalDetails?.lastName} onChange={(e) => handleChange(e, 'personalDetails')}
-                                        className="border p-2 rounded"
                                     />
                                     <TextField
-                                        InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
-                                        type="date" name="dob" required={true}
-                                        value={formData.personalDetails?.dob ? formData.personalDetails?.dob.split('T')[0] : ''} onChange={(e) => handleChange(e, 'personalDetails')}
-                                        className="border p-2 rounded"
+                                        label="Last Name" type="text" name="lastName"
+                                        value={formData.personalDetails?.lastName} onChange={(e) => handleChange(e, 'personalDetails')}
                                     />
-                                    <select
-                                        name="gender"
+                                    <TextField
+                                        type="date" name="dob" required={true}
+                                        InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
+                                        value={formData.personalDetails?.dob ? formData.personalDetails?.dob.split('T')[0] : ''} onChange={(e) => handleChange(e, 'personalDetails')}
+                                    />
+                                    <TextField
+                                        select label='Gender' name="gender"
                                         value={formData.personalDetails?.gender} onChange={(e) => handleChange(e, 'personalDetails')}
-                                        className="border p-2 rounded"
                                     >
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                        <MenuItem value="Male">Male</MenuItem>
+                                        <MenuItem value="Female">Female</MenuItem>
+                                        <MenuItem value="Other">Other</MenuItem>
+                                    </TextField>
                                 </div>
                                 <div className=" mt-2 grid grid-cols-2 sm:grid-cols-2 gap-2">
-                                    <TextField label="Email"
+                                    <TextField
+                                        label="Email" type="email" name="email" required={true}
                                         InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
-                                        type="email" name="email" placeholder="Email*" required={true}
                                         value={formData.personalDetails?.contact?.email} onChange={(e) => handleChange(e, 'personalDetails', 'contact')}
-                                        className="border p-2 rounded"
                                     />
-                                    <TextField label="Number"
+                                    <TextField
+                                        label="Phone (excluding +91)" type="tel" name="phone" required={true}
                                         InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
-                                        type="tel" name="phone" placeholder="Phone*" required={true}
                                         value={formData.personalDetails?.contact?.phone} onChange={(e) => handleChange(e, 'personalDetails', 'contact')}
-                                        className="border p-2 rounded"
                                     />
                                 </div>
-                                <div className="mt-4">
+                                <div className="mt-2">
                                     <h4 className="block text-sm font-medium text-gray-700 mb-2">Residence Details</h4>
                                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                                        <TextField label="Street"
-                                            type="text" name="street" placeholder="Street"
+                                        <TextField
+                                            label="Street" type="text" name="street"
                                             value={formData.personalDetails?.address?.street} onChange={(e) => handleChange(e, 'personalDetails', 'address')}
-                                            className="border p-2 rounded"
                                         />
-                                        <TextField label="City"
-                                            type="text" name="city" placeholder="City"
+                                        <TextField
+                                            label="City" type="text" name="city"
                                             value={formData.personalDetails?.address?.city} onChange={(e) => handleChange(e, 'personalDetails', 'address')}
-                                            className="border p-2 rounded"
                                         />
-                                        <TextField label="State"
-                                            type="text" name="state" placeholder="State"
+                                        <TextField
+                                            label="State" type="text" name="state"
                                             value={formData.personalDetails?.address?.state} onChange={(e) => handleChange(e, 'personalDetails', 'address')}
-                                            className="border p-2 rounded"
                                         />
-                                        <TextField label="Country"
-                                            type="text" name="country" placeholder="Country"
+                                        <TextField
+                                            label="Country" type="text" name="country"
                                             value={formData.personalDetails?.address?.country}
                                             onChange={(e) => handleChange(e, 'personalDetails', 'address')}
-                                            className="border p-2 rounded"
                                         />
-                                        <TextField label="Pincode"
-                                            type="text" name="pincode" placeholder="PINCODE"
+                                        <TextField
+                                            label="PINCODE" type="text" name="pincode"
                                             value={formData.personalDetails?.address?.pincode} onChange={(e) => handleChange(e, 'personalDetails', 'address')}
-                                            className="border p-2 rounded"
                                         />
                                     </div>
                                 </div>
-                                <div className="mt-4">
+                                <div className="mt-2">
                                     <h4 className="block text-sm font-medium text-gray-700 mb-2">Nominee Details</h4>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                        <TextField label="Nominee Name"
-                                            type="text" name="name" placeholder="Nominee Name"
+                                        <TextField
+                                            label="Nominee Name" type="text" name="name"
                                             value={formData.personalDetails?.nominee?.name} onChange={(e) => handleChange(e, 'personalDetails', 'nominee')}
-                                            className="border p-2 rounded"
                                         />
-                                        <TextField label="Nomine Number"
-                                            type="tel" name="phone" placeholder="Nominee Phone"
+                                        <TextField
+                                            label="Nominee Number" type="tel" name="phone"
                                             value={formData.personalDetails?.nominee?.phone} onChange={(e) => handleChange(e, 'personalDetails', 'nominee')}
-                                            className="border p-2 rounded"
                                         />
-                                        <input
-                                            type="date" name="dob" placeholder="Nominee DOB"
+                                        <TextField
+                                            type="date" name="dob"
                                             value={formData.personalDetails?.nominee?.dob} onChange={(e) => handleChange(e, 'personalDetails', 'nominee')}
-                                            className="border p-2 rounded"
                                         />
-                                        <TextField label="Relationship"
-                                            type="text" name="relationship" placeholder="Relationship"
+                                        <TextField
+                                            select label="Relation with Nominee" name="relationship"
                                             value={formData.personalDetails?.nominee?.relationship} onChange={(e) => handleChange(e, 'personalDetails', 'nominee')}
-                                            className="border p-2 rounded"
-                                        />
+                                        >
+                                            <MenuItem value="Spouse">Spouse</MenuItem>
+                                            <MenuItem value="Son">Son</MenuItem>
+                                            <MenuItem value="Daughter">Daughter</MenuItem>
+                                            <MenuItem value="Father">Father</MenuItem>
+                                            <MenuItem value="Mother">Mother</MenuItem>
+                                        </TextField>
                                     </div>
                                 </div>
                             </section>
@@ -319,7 +314,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                                     />
                                                     <div
                                                         onClick={handleFileUploadPanCard}
-                                                        className='w-80 h-8 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-gray-900'
+                                                        className='w-48 h-8 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-gray-900'
                                                     >
                                                         <span className='overflow-hidden whitespace-nowrap text-ellipsis'>
                                                             {files.panCard ? files.panCard?.name : 'Upload PAN Card'}
@@ -364,7 +359,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                                     />
                                                     <div
                                                         onClick={handleFileUploadAadhaar}
-                                                        className='w-80 h-8 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-gray-900'
+                                                        className='w-48 h-8 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-gray-900'
                                                     >
                                                         <span className='overflow-hidden whitespace-nowrap text-ellipsis'>
                                                             {files.aadhaar ? files.aadhaar?.name : 'Upload Aadhaar'}
@@ -375,7 +370,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                             }
                                         </div>
                                     </div>
-                                    <div className="mt-4">
+                                    <div className="mt-2">
                                         <h4 className="block text-sm font-medium text-gray-700 mb-2">Account Details</h4>
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                             <TextField label="account No"
@@ -465,7 +460,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                 }
                             </>
                         }
-                        <div className='w-full h-16 mt-8'>
+                        <div className='w-full h-14 mt-5'>
                             {(activeStep === 0) &&
                                 <div className='float-right'>
                                     <Button variant="contained" color="primary" size="large" onClick={handleNext}>Next</Button>
@@ -482,7 +477,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                             }
                         </div>
                         <div className='relative'>
-                            {error && <span className='absolute bottom-0 text-sm text-red-600'>{error}</span>}
+                            {error && <span className='absolute -bottom-2 text-sm text-red-600'>{error}</span>}
                         </div>
                     </form>
                     <Stepper activeStep={activeStep} alternativeLabel>

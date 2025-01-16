@@ -21,6 +21,21 @@ const createSip = async (req, res) => {
             stage: 'Interested'
         });
 
+        const client = await Client.findByIdAndUpdate(
+            id,
+            {
+                $push: {
+                    interactionHistory: {
+                        type: 'SIP Requested',
+                        description: 'A request to start a new SIP has been submitted.',
+                    },
+                }
+            },
+            { new: true }
+        );
+
+        if (!client) return res.status(404).json({ message: 'Client not found.' });
+
         res.status(200).json(sip);
     } catch (error) {
         console.error(error);

@@ -1,7 +1,7 @@
 import express from 'express';
 import auth from '../middleware/auth.middleware.js';
 import upload from '../middleware/multer.middleware.js';
-import { fetchCondenseInfo, register, login, logout, forgotPassword, resetPassword, fetchAllClients, deleteProfile, fetchProfileData, fetchPoliciesData, updateProfile, uploadProfileMedia, create, findClient, exportCsv, importCsv } from '../controllers/client.controller.js';
+import { fetchCondenseInfo, register, login, logout, forgotPassword, resetPassword, fetchAllClients, deleteProfile, fetchProfileData, fetchPoliciesData, updateProfile, uploadProfileMedia, create, findClient, exportCsv, importCsv, requestCallbackViaWebsite, requestCallbackViaWhatsApp, fetchAllRequestCallbacks, resolveRequestCallback } from '../controllers/client.controller.js';
 
 const router = express.Router();
 
@@ -26,5 +26,9 @@ router.patch('/resetPassword', resetPassword);
 router.post('/find', findClient);
 router.get('/exportCsv', auth, exportCsv);
 router.post('/importCsv', auth, upload.single('file'), importCsv);
+router.post('/requestCallbackViaWebsite', auth, requestCallbackViaWebsite);
+router.post('/requestCallbackViaWhatsApp', requestCallbackViaWhatsApp);
+router.get('/fetchAllRequestCallbacks', auth, fetchAllRequestCallbacks);
+router.get('/resolveRequestCallback', auth, resolveRequestCallback);
 
 export default router;

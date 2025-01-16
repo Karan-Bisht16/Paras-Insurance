@@ -40,8 +40,27 @@ const calculateAge = (dobString) => {
     return age;
 }
 
+const getSuffix = (number) => {
+    if (typeof number !== "number" || !Number.isInteger(number)) {
+        return "Invalid input. Please provide an integer.";
+    }
+
+    const suffixes = ["th", "st", "nd", "rd"];
+    const remainder = number % 100;
+
+    if (remainder >= 11 && remainder <= 13) {
+        return number + "th";
+    }
+
+    const lastDigit = number % 10;
+    const suffix = suffixes[lastDigit] || "th";
+
+    return suffix;
+}
+
 export {
     toFormattedDate,
     toFormattedTime,
-    calculateAge
+    calculateAge,
+    getSuffix,
 };

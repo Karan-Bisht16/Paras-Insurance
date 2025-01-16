@@ -37,13 +37,16 @@ const CompanyForm = () => {
         getClientPolicyData();
     }, [clientPolicyId, companyId]);
 
+    const [submitting, setSubmitting] = useState(false);
     const handleAddQuotation = async (quotationData) => {
+        setSubmitting(true);
         try {
             await createQuotation({ clientPolicyId, clientId, companyId, quotationData });
             navigate('/', { state: { status: 'success', message: 'Quotation data recieved!', time: new Date().getTime() } })
         } catch (error) {
             console.error(error);
         }
+        setSubmitting(false);
     }
 
     tailChase.register();
@@ -78,15 +81,18 @@ const CompanyForm = () => {
                             <p className='text-3xl font-semibold text-gray-900'>No Company found</p>
                         </div>
                         :
-                        <div className="flex flex-col bg-gray-100 md:flex-row min-h-screen">
-                            <div className="w-full md:w-[60vw] p-4 bg-gray-100 overflow-y-auto">
+                        <div className="flex flex-col gap-4 justify-between bg-gray-100 md:flex-row min-h-screen">
+                            <div className="md:hidden m-4">
+                                <QuotationForm onSubmit={handleAddQuotation} />
+                            </div>
+                            <div className="w-full md:w-[56vw] h-[calc(100vh-64px)] p-4 bg-gray-100 overflow-y-auto no-scrollbar">
                                 <PolicyDetailModal
                                     selectedPolicy={clientPolicyData}
                                     isCompanyForm={true}
                                 />
                             </div>
-                            <div className="w-full md:w-[38vw] my-4">
-                                <QuotationForm onSubmit={handleAddQuotation} />
+                            <div className="hidden md:block w-full md:w-[40vw] my-4 mr-4">
+                                <QuotationForm submitting={submitting} onSubmit={handleAddQuotation} />
                             </div>
                         </div>
             }

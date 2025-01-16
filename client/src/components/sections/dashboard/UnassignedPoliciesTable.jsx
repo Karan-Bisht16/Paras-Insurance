@@ -1,17 +1,19 @@
 import { useContext, useMemo, useState } from 'react';
-import { Checkbox, Tooltip } from '@mui/material';
-import { DoneAllOutlined, OpenInNew, PostAddOutlined, SearchOutlined, Upload, Visibility } from '@mui/icons-material';
+import { Button, Checkbox, Tooltip } from '@mui/material';
+import { DoneAllOutlined, Edit, Info, InfoOutlined, OpenInNew, PostAddOutlined, SearchOutlined, Upload, Visibility } from '@mui/icons-material';
 import Spreadsheet from "react-spreadsheet";
 import * as XLSX from 'xlsx';
 // importing api end-points
-import { sendCombinedQuotation } from '../../../api';
+import { sendCombinedQuotation, updateClientPolicy, uploadUpdateClientPolicyMedia } from '../../../api';
 // importing contexts
 import { SnackBarContext } from '../../../contexts/SnackBar.context';
 // importing components
 import { ScrollArea } from '../../subcomponents/ScrollArea';
 import PolicyDetailModal from '../../subcomponents/PolicyDetailModal';
+import EditPolicyModal from '../../subcomponents/EditPolicyModal';
 // importing helper functions
 import { toFormattedDate } from '../../../utils/helperFunctions';
+import CombinedQuotationDetails from './CombinedQuotationDetailsModal';
 
 const UnassignedPoliciesTable = ({ unassignedPolicies, onAssignPolicy, reload }) => {
     const { setSnackbarState, setSnackbarValue } = useContext(SnackBarContext);
@@ -167,6 +169,49 @@ const UnassignedPoliciesTable = ({ unassignedPolicies, onAssignPolicy, reload })
         }
     };
 
+    const [combinedQuotationDetails, setCombinedQuotationDetails] = useState({});
+    const [isCombinedQuotationDetailsSelected, setIsCombinedQuotationDetailsSelected] = useState(false);
+    const handleOpenCombinedQuotationDetails = (policy, combinedQuotationDetails, associatedPoCs) => {
+        setSelectedPolicy(policy);
+        setCombinedQuotationDetails({ combinedQuotationDetails, associatedPoCs });
+        setIsCombinedQuotationDetailsSelected(true);
+    }
+    const handleCloseCombinedQuotationDetails = () => {
+        setSelectedPolicy(null);
+        setCombinedQuotationDetails({});
+        setIsCombinedQuotationDetailsSelected(false);
+    }
+
+    const [isPolicySelectedForEdit, setIsPolicySelectedForEdit] = useState(false);
+    const [selectedPolicyForEdit, setSelectedPolicyForEdit] = useState({});
+    const [selectedPolicyFieldsForEdit, setSelectedPolicyFieldsForEdit] = useState({});
+    const [selectedPolicyId, setSelectedPolicyId] = useState('');
+    const handleOpenPolicyForEdit = (policyData) => {
+        setSelectedPolicyId(policyData._id);
+        setSelectedPolicyForEdit(policyData.data);
+        setSelectedPolicyFieldsForEdit(policyData.format?.policyForm);
+        setIsPolicySelectedForEdit(true);
+    };
+    const handleClosePolicyForEdit = () => {
+        setSelectedPolicyId('');
+        setSelectedPolicyForEdit({});
+        setSelectedPolicyFieldsForEdit({});
+        setIsPolicySelectedForEdit(false);
+    };
+
+    const handleEditPolicySubmit = async ({ formData, files }) => {
+        try {
+            const { status } = await updateClientPolicy({ formData, selectedPolicyId });
+            if (status === 200) {
+                await uploadUpdateClientPolicyMedia({ ...files, selectedPolicyId: selectedPolicyId });
+            }
+            reload();
+            return false;
+        } catch (error) {
+            return error?.response?.data?.message;
+        }
+    }
+
     return (
         <div className="space-y-4">
             <div className="flex justify-between mb-4">
@@ -204,7 +249,7 @@ const UnassignedPoliciesTable = ({ unassignedPolicies, onAssignPolicy, reload })
                                 Initiated On
                             </th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Details
+                                Actions
                             </th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Quotation
@@ -241,17 +286,32 @@ const UnassignedPoliciesTable = ({ unassignedPolicies, onAssignPolicy, reload })
                                     <div className="text-sm text-gray-500">{toFormattedDate(policy.createdAt)}</div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                    <button className="text-blue-600 hover:text-blue-900">
+                                    <button className="text-gray-600 hover:text-blue-900 mr-2">
                                         <Tooltip title='View policy details'>
                                             <Visibility onClick={() => handleSelectPolicy(policy)} />
                                         </Tooltip>
                                     </button>
+                                    <button className="p-1 border border-gray-300 rounded-md shadow-sm text-blue-600 hover:text-blue-900 ml-1 focus:outline-none">
+                                        <Tooltip title='View policy details'>
+                                            <Edit onClick={() => handleOpenPolicyForEdit(policy)} />
+                                        </Tooltip>
+                                    </button>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                    <button className="w-full flex justify-center relative text-green-600 hover:text-green-900">
-                                        {(policy?.combinedQuotationDetails && Object.keys(policy?.combinedQuotationDetails).length !== 0)
+                                    <button className='text-gray-600 mr-2'>
+                                        <Tooltip title='More Details'>
+                                            <InfoOutlined className='!size-4' onClick={
+                                                () => handleOpenCombinedQuotationDetails(
+                                                    policy,
+                                                    policy?.combinedQuotationDetails,
+                                                    policy?.associatedPoCs,
+                                                )} />
+                                        </Tooltip>
+                                    </button>
+                                    <button className="p-1 border border-gray-300 rounded-md shadow-sm text-green-600 hover:text-green-900 focus:outline-none">
+                                        {(policy?.combinedQuotationDetails && Object.keys(policy?.combinedQuotationDetails).length !== 0 && policy?.combinedQuotationDetails?.status !== 'Pending')
                                             ?
-                                            <Tooltip title='Quotation Sent'>
+                                            <Tooltip title='Quotation Sent to user'>
                                                 <DoneAllOutlined />
                                             </Tooltip>
                                             :
@@ -300,9 +360,10 @@ const UnassignedPoliciesTable = ({ unassignedPolicies, onAssignPolicy, reload })
                         <div className="relative top-10 mx-auto p-5 border w-full lg:w-[50vw] shadow-lg rounded-md bg-white">
                             <input id='excelUpload' type='file' multiple={false} accept='.xlsx,.xls,.csv' onChange={handleFileUpload} className='opacity-0 absolute pointer-events-none' />
                             <div className='bg-gray-100 rounded-md p-4'>
-                                <div className="mt-3 flex flex-col gap-2 items-center cursor-pointer" onClick={handleUploadExcel}>
-                                    <Upload />
-                                    Upload Excel (.xlsx, .xls, .csv)
+                                <div className="my-8 flex flex-col gap-2 items-center cursor-pointer text-center text-xl" onClick={handleUploadExcel}>
+                                    <Upload className='!size-16' />
+                                    Upload Excel file to be sent as quotation.<br />
+                                    Supported formats: .xlsx, .xls, .csv
                                 </div>
                             </div>
                             <p id='excelUploadFileName'></p>
@@ -318,13 +379,14 @@ const UnassignedPoliciesTable = ({ unassignedPolicies, onAssignPolicy, reload })
                                 <button
                                     type='button'
                                     onClick={handleCloseSendCombinedQuotationModal}
-                                    className='px-4 py-2 rounded-md text-gray-900 bg-white mr-2 border-2 border-gray-900 mt-2 hover:opacity-95'
+                                    className='px-4 py-2 uppercase rounded-md text-gray-900 bg-white mr-2 border-2 border-gray-900 hover:opacity-95'
                                 >Cancel</button>
-                                <button
+                                <Button
                                     disabled={combinedQuotationData.length === 0}
                                     onClick={handleSendCombinedQuotation}
-                                    className='px-4 py-2 rounded-md bg-gray-900 text-white mr-2 mt-2 hover:opacity-95'
-                                >Send</button>
+                                    className='!px-4 !text-white !bg-gray-900 !hover:opacity-95'
+                                >Send
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -334,6 +396,25 @@ const UnassignedPoliciesTable = ({ unassignedPolicies, onAssignPolicy, reload })
                     <PolicyDetailModal
                         selectedPolicy={selectedPolicy}
                         closeModal={() => setIsPolicySelected(false)}
+                    />
+                }
+
+                {isCombinedQuotationDetailsSelected &&
+                    <CombinedQuotationDetails
+                        selectedPolicy={selectedPolicy}
+                        details={combinedQuotationDetails}
+                        onClose={handleCloseCombinedQuotationDetails}
+                        reload={reload}
+                    />
+                }
+
+                {isPolicySelectedForEdit &&
+                    <EditPolicyModal
+                        formFields={selectedPolicyFieldsForEdit}
+                        formData={selectedPolicyForEdit}
+                        setFormData={setSelectedPolicyForEdit}
+                        onSubmit={handleEditPolicySubmit}
+                        onClose={handleClosePolicyForEdit}
                     />
                 }
             </div>

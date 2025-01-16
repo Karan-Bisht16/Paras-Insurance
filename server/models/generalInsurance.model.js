@@ -135,22 +135,5 @@ const generalInsuranceSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-generalInsuranceSchema.post('save', async function (document, next) {
-    try {
-        await Client.findByIdAndUpdate(document.clientId, {
-            $push: {
-                interactionHistory: {
-                    type: 'General Insurance Requested',
-                    description: 'A request for General Insurance has been submitted.',
-                },
-            },
-        });
-    } catch (error) {
-        console.error('Error updating client interaction history:', error);
-    }
-
-    next();
-});
-
 const GeneralInsurance = mongoose.model('GeneralInsurance', generalInsuranceSchema);
 export default GeneralInsurance;

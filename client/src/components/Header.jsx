@@ -144,13 +144,13 @@ const Header = () => {
                                     <ListItemIcon>
                                         <AccountCircle fontSize='medium' className='text-gray-900' />
                                     </ListItemIcon>
-                                    Profile
+                                    My Profile
                                 </MenuItem>
                                 <MenuItem onClick={handleMyPoliciesNavigate}>
                                     <ListItemIcon>
                                         <Assignment fontSize='small' className='text-gray-900' />
                                     </ListItemIcon>
-                                    My Policies
+                                    My Policies & SIP
                                 </MenuItem>
                                 <MenuItem onClick={handleResetPassword}>
                                     <ListItemIcon>

@@ -33,6 +33,9 @@ export const importClientCsv = (media) => API.post('/client/importCsv', media, {
         'Content-Type': 'multipart/form-data',
     }
 });
+export const requestCallbackViaWebsite = (formData) => API.post('/client/requestCallbackViaWebsite', { formData });
+export const fetchAllRequestCallbacks = () => API.get('/client/fetchAllRequestCallbacks');
+export const resolveRequestCallback = ({ clientId, notesId }) => API.get('/client/resolveRequestCallback', { params: { clientId, notesId } });
 
 // Policy - DONE
 export const fetchAllPolicies = () => API.get('/policy/fetchAll');
@@ -46,10 +49,22 @@ export const uploadClientPolicyMedia = (media) => API.post('/clientPolicy/upload
         'Content-Type': 'multipart/form-data',
     }
 });
+export const uploadExisitingClientPolicy = (formData) => API.post('/clientPolicy/uploadExisitingClientPolicy', formData);
+export const uploadExisitingClientPolicyMedia = (media) => API.post('/clientPolicy/uploadExisitingClientPolicyMedia', media, {
+    headers: {
+        'Content-Type': 'multipart/form-data',
+    }
+});
 export const fetchClientPolicy = (clientPolicyId) => API.get('/clientPolicy/fetchClientPolicy', { params: clientPolicyId });
 export const fetchAllUnassignedPolicies = () => API.get('/clientPolicy/fetchAllUnassigned');
 export const fetchAllAssignedPolicies = () => API.get('/clientPolicy/fetchAllAssigned');
 export const countAllAssignedPolicies = () => API.get('/clientPolicy/countAllAssigned');
+export const updateClientPolicy = (formData) => API.post('/clientPolicy/updateClientPolicy', formData);
+export const uploadUpdateClientPolicyMedia = (media) => API.post('/clientPolicy/uploadUpdateClientPolicyMedia', media, {
+    headers: {
+        'Content-Type': 'multipart/form-data',
+    }
+});
 export const assignClientPolicy = (data) => API.post('/clientPolicy/assignClientPolicy', data);
 export const uploadAssignClientPolicyMedia = (media) => API.post('/clientPolicy/uploadAssignClientPolicyMedia', media, {
     headers: {
@@ -57,12 +72,6 @@ export const uploadAssignClientPolicyMedia = (media) => API.post('/clientPolicy/
     }
 });
 export const sendCombinedQuotation = (formData) => API.put('/clientPolicy/sendCombinedQuotation', formData);
-export const uploadExisitingClientPolicy = (formData) => API.post('/clientPolicy/uploadExisitingClientPolicy', formData);
-export const uploadExisitingClientPolicyMedia = (media) => API.post('/clientPolicy/uploadExisitingClientPolicyMedia', media, {
-    headers: {
-        'Content-Type': 'multipart/form-data',
-    }
-});
 export const exportClientPolicyCsv = () => API.get('/clientPolicy/exportCsv', {
     headers: {
         'Accept': 'text/csv',
@@ -91,8 +100,9 @@ export const addCompanyPolicy = (formData) => API.post('/company/addPolicy', for
 export const removeCompanyPolicy = (companyId, policyId) => API.delete('/company/removePolicy', { params: { companyId, policyId } });
 // export const fetchCompanyPoliciesByType = (clientId, policyType) => API.get('/company/fetchPolicyByType', { params: { clientId, policyType } });
 
-// Quotation - DONE (Admin should be able to view current quotation and send it manually)
+// Quotation - DONE
 export const createQuotation = (formData) => API.post('/quotation/create', { formData });
+export const sendQuotation = (clientPolicyId) => API.get('/quotation/send', { params: clientPolicyId });
 
 // SIP - DONE
 export const createSip = (formData) => API.post('/sip/create', { formData });
@@ -127,7 +137,3 @@ export const uploadAssignGeneralInsuranceMedia = (media) => API.post('/generalIn
         'Content-Type': 'multipart/form-data',
     }
 });
-
-// Callback
-export const createCallback = (formData) => API.post('/callback/create', { formData });
-export const fetchAllCallback = () => API.get('/callback/fetchAll');

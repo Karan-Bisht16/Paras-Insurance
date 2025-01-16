@@ -6,6 +6,7 @@ import ClientManagement from './sections/ClientManagement';
 import PolicyManagement from './sections/PolicyManagement';
 import CompanyManagement from './sections/CompanyManagement';
 import EmployeeManagement from './sections/EmployeeManagement';
+import RequestCallback from './sections/RequestCallback';
 
 const AdminPanel = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -27,6 +28,8 @@ const AdminPanel = () => {
                 return <CompanyManagement />;
             case 'employee':
                 return <EmployeeManagement />;
+            case 'callback':
+                return <RequestCallback />;
             default:
                 return <Dashboard />;
         }

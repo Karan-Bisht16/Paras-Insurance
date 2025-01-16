@@ -19,7 +19,6 @@ import Footer from '../components/Footer';
 import { toFormattedDate } from '../utils/helperFunctions';
 import AssignPolicyModal from '../components/subcomponents/AssignPolicyModal';
 
-// TODO: General Insurance table me add kardo
 const ClientPolicies = () => {
     const { id } = useParams();
 
@@ -35,7 +34,7 @@ const ClientPolicies = () => {
 
     const getClientPoliciesAndSipsAndGeneralInsurances = async () => {
         try {
-            const { status, data } = await fetchPoliciesData({ clientId: id });
+            const { data } = await fetchPoliciesData({ clientId: id });
             const { clientPolicies, clientFirstName, clientLastName } = data;
             setClientPolicies(clientPolicies);
             if (clientLastName) {
@@ -172,7 +171,7 @@ const ClientPolicies = () => {
     const closeAssignPolicyModal = () => {
         setIsAssignPolicyModalOpen(false);
         setPolicyDocument('');
-        setFormData({ expiryDate: '', policyNo: '' });
+        setFormData((prevFormData) => { return { ...prevFormData, expiryDate: '', policyNo: '' } });
     }
 
     const handleSubmit = async () => {
@@ -289,7 +288,7 @@ const ClientPolicies = () => {
                                                                     Details
                                                                     <Info className='!size-4' />
                                                                 </Button>
-                                                                {policy?.combinedQuotationDetails && Object.keys(policy?.combinedQuotationDetails).length !== 0 &&
+                                                                {policy?.combinedQuotationDetails && Object.keys(policy?.combinedQuotationDetails).length !== 0 && policy?.combinedQuotationDetails?.status !== 'Pending' &&
                                                                     <Button
                                                                         onClick={() => selectCombinedQuotation(policy?.combinedQuotationDetails)}
                                                                         className='!flex !gap-2 !items-center !justify-center float-right !mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
@@ -332,7 +331,14 @@ const ClientPolicies = () => {
                                                                     <span className='text-gray-500'><strong>Expiry Date:</strong> {policy?.expiryDate}</span>
                                                                 </div>
                                                                 <Button
-                                                                    onClick={() => selectPolicy({ data: policy?.data, format: policy?.policyDetails, stage: policy?.stage })}
+                                                                    onClick={() => selectPolicy({
+                                                                        data: policy?.data,
+                                                                        format: policy?.policyDetails,
+                                                                        stage: policy?.stage,
+                                                                        policyId: policy?.policyId,
+                                                                        policyNo: policy?.policyNo,
+                                                                        policyDocumentURL: policy?.policyDocumentURL,
+                                                                    })}
                                                                     className='!ml-2 !flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
                                                                 >
                                                                     Details
@@ -342,7 +348,7 @@ const ClientPolicies = () => {
                                                                     onClick={() => handleOpenInNew(policy?.policyDocumentURL)}
                                                                     className='!flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
                                                                 >
-                                                                    Policy Certificate
+                                                                    Policy Document
                                                                     <Assignment className='!size-4' />
                                                                 </Button>
                                                             </div>
@@ -423,7 +429,7 @@ const ClientPolicies = () => {
                                                                         onClick={() => handleOpenInNew(sip?.sipDocumentURL)}
                                                                         className='!flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
                                                                     >
-                                                                        SIP Certificate
+                                                                        SIP Document
                                                                         <Assignment className='!size-4' />
                                                                     </Button>
                                                                     <Button
@@ -514,7 +520,7 @@ const ClientPolicies = () => {
                                                                         onClick={() => handleOpenInNew(generalInsurance?.generalInsuranceDocumentURL)}
                                                                         className='!flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
                                                                     >
-                                                                        General Insurance Certificate
+                                                                        General Insurance Document
                                                                         <Assignment className='!size-4' />
                                                                     </Button>
                                                                     <Button

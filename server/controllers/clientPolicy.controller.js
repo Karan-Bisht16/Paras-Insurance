@@ -1,5 +1,7 @@
 import fs from 'fs';
 import ejs from 'ejs';
+import path from 'path';
+import axios from 'axios';
 import csv from 'csvtojson';
 import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
@@ -12,7 +14,10 @@ import Quotation from '../models/quotation.model.js';
 import ClientPolicy from '../models/clientPolicy.model.js';
 import CombinedQuotation from '../models/combinedQuotation.model.js';
 // importing helper functions
-import { condenseClientInfo, cookiesOptions, generateAccessAndRefreshTokens, transporter } from '../utils/helperFunctions.js';
+import { transporter } from '../utils/helperFunctions.js';
+import Employee from '../models/employee.model.js';
+
+const __dirname = path.resolve();
 
 // working
 const processFormData = (formData) => {
@@ -108,16 +113,57 @@ const addAdditionalClientData = async (clientId, formData) => {
     }
 };
 // working
-const sendQuotationMail = async ({ to, clientPolicyId, clientId, policyId, policyType }) => {
-    await CombinedQuotation.create({
-        clientPolicyId: clientPolicyId,
-        clientId: clientId,
-        policyId: policyId,
-        quotationData: [],
-        countTotalEmails: to.length,
-        countRecievedQuotations: 0,
-    });
+const sendTemplateMessage = async (phoneNumber, pocName, policyType, formLink) => {
+    try {
+        const url = `https://graph.facebook.com/v18.0/${process.env.PHONE_NUMBER_ID}/messages`;
 
+        const headers = {
+            Authorization: `Bearer ${process.env.GRAPH_API_TOKEN}`,
+            'Content-Type': 'application/json',
+        };
+
+        const payload = {
+            messaging_product: 'whatsapp',
+            recipient_type: 'individual',
+            to: phoneNumber,
+            type: 'template',
+            template: {
+                name: 'paaras_quotation_template_one',
+                language: { code: 'en_US' },
+                components: [
+                    {
+                        type: "body",
+                        parameters: [
+                            { type: "text", text: pocName },
+                            { type: "text", text: policyType },
+                            { type: "text", text: formLink }
+                        ]
+                    }
+                ]
+            },
+        };
+
+        const response = await axios.post(url, payload, { headers });
+        return response.data;
+    } catch (error) {
+        console.error('Error sending template message:', error.response?.data || error.message);
+        throw error;
+    }
+};
+// working
+const sendQuotationWA = async ({ to, clientPolicyId, clientId, policyType }) => {
+    for (let i = 0; i < to.length; i++) {
+        const phoneNumber = `91${to[i]?.phones[0]}`;
+        // const companyName = to[i]?.companyName[0];
+        const pocName = to[i]?.names[0];
+        const formLink = `${process.env.FRONT_END_URL}/companyForm/${clientId}/${clientPolicyId}/${to[i]._id}`;
+
+        const result = await sendTemplateMessage(phoneNumber, pocName, policyType, formLink);
+        console.log(result);
+    }
+};
+// working
+const sendQuotationMail = async ({ to, clientPolicyId, clientId, policyId, policyType }) => {
     const emailTemplate = fs.readFileSync('./assets/getQuotationEmailTemplate.ejs', 'utf-8');
     for (let i = 0; i < to.length; i++) {
         const emailContent = ejs.render(emailTemplate, {
@@ -140,127 +186,84 @@ const sendQuotationMail = async ({ to, clientPolicyId, clientId, policyId, polic
     }
 };
 // working
-const clientPolicyWithClientId = async (res, { policyId, clientId, data, clientData, isNewClient }) => {
-    const newClientPolicy = await ClientPolicy.create({
-        policyId: policyId,
-        clientId: clientId,
-        data: data,
-        stage: 'Interested'
-    });
-
-    addAdditionalClientData(clientId, data);
-
-    const policy = await Policy.findById(policyId);
-    const policyType = policy.policyType.toLowerCase();
-
-    const result = await Company.aggregate([
-        { $unwind: '$companyPoliciesProvided' },
-        {
-            $match: {
-                $expr: {
-                    $eq: [
-                        { $toLower: '$companyPoliciesProvided.policyType' },
-                        policyType.toLowerCase()
-                    ]
-                }
-            }
-        },
-        {
-            $group: {
-                _id: '$_id',
-                emails: { $push: '$companyPoliciesProvided.contactPerson.email' }
-            }
-        },
-        {
-            $project: {
-                _id: 1,
-                emails: 1
-            }
-        }
-    ]);
-    console.log(result);
-
-    sendQuotationMail({ to: result, clientPolicyId: newClientPolicy._id, clientId, policyId, policyType });
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(clientData);
-    const clientInfo = await condenseClientInfo(clientData);
-
-    res.status(200)
-        .cookie('accessToken', accessToken, cookiesOptions)
-        .cookie('refreshToken', refreshToken, cookiesOptions)
-        .json({ clientInfo, newClientPolicy });
-};
-// working
 const createClientPolicy = async (req, res) => {
     try {
         console.log(req.body);
         const { policyId, clientId, formData } = req.body;
-        // this is redundant
-        // if (!clientId && password) {
-        //     let newClientId;
-        //     const { firstName, lastName, phone, email } = formData;
-        //     if (email) {
-        //         const clientCorrespondingToEmail = await Client.findOne({ 'personalDetails.contact.email': email });
-        //         if (clientCorrespondingToEmail) {
-        //             newClientId = clientCorrespondingToEmail._id;
-        //             await clientPolicyWithClientId(res, {
-        //                 policyId,
-        //                 clientId: newClientId,
-        //                 data: formData,
-        //                 clientData: clientCorrespondingToEmail,
-        //                 isNewClient: false
-        //             });
-        //             return;
-        //         }
-        //     }
-        //     if (phone) {
-        //         const clientCorrespondingToPhone = await Client.findOne({ 'personalDetails.contact.phone': phone });
-        //         if (clientCorrespondingToPhone) {
-        //             newClientId = clientCorrespondingToPhone._id;
-        //             await clientPolicyWithClientId(res, {
-        //                 policyId,
-        //                 clientId: newClientId,
-        //                 data: formData,
-        //                 clientData: clientCorrespondingToPhone,
-        //                 isNewClient: false
-        //             });
-        //             return;
-        //         }
-        //     }
-        //     const newClient = await Client.create({
-        //         userType: 'Lead',
-        //         password: password,
-        //         personalDetails: {
-        //             firstName: firstName,
-        //             lastName: lastName,
-        //             contact: {
-        //                 email: email,
-        //                 phone: phone
-        //             },
-        //         }
-        //     });
-
-        //     newClientId = newClient._id;
-        //     await clientPolicyWithClientId(res, {
-        //         policyId,
-        //         clientId: newClientId,
-        //         data: formData,
-        //         clientData: newClient,
-        //         isNewClient: true
-        //     });
-        //     return;
-        // } else {
         const client = await Client.findById(new ObjectId(clientId));
-        await clientPolicyWithClientId(res, {
-            policyId,
-            clientId: new ObjectId(clientId),
+
+        if (!client) return res.status(404).json({ message: 'Client not found' });
+
+        const newClientPolicy = await ClientPolicy.create({
+            policyId: policyId,
+            clientId: clientId,
             data: formData,
-            clientData: client,
-            isNewClient: false
+            stage: 'Interested'
         });
-        return;
-        // }
+
+        // addAdditionalClientData(clientId, data); // to update client details with new form data
+
+        const policy = await Policy.findById(policyId);
+        const policyType = policy?.policyType;
+
+        const result = await Company.aggregate([
+            { $unwind: '$companyPoliciesProvided' },
+            {
+                $match: {
+                    $expr: {
+                        $eq: [
+                            { $toLower: '$companyPoliciesProvided.policyType' },
+                            policyType?.toLowerCase()
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    emails: { $push: '$companyPoliciesProvided.contactPerson.email' },
+                    phones: { $push: '$companyPoliciesProvided.contactPerson.phone' },
+                    names: { $push: '$companyPoliciesProvided.contactPerson.name' },
+                    companyName: { $push: '$companyName' }
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    emails: 1,
+                    phones: 1,
+                    names: 1,
+                    companyName: 1,
+                }
+            }
+        ]);
+        console.log(result);
+
+        const combinedQuotation = await CombinedQuotation.create({
+            clientPolicyId: newClientPolicy._id,
+            clientId: clientId,
+            policyId: policyId,
+            quotationData: [],
+            countTotalEmails: result.length,
+            countRecievedQuotations: 0,
+        });
+
+        newClientPolicy.associatedPoCs = result;
+        newClientPolicy.quotation = combinedQuotation._id;
+        await newClientPolicy.save();
+
+        if (result.length > 0) {
+            sendQuotationMail({ to: result, clientPolicyId: newClientPolicy._id, clientId, policyId, policyType });
+            sendQuotationWA({ to: result, clientPolicyId: newClientPolicy._id, clientId, policyId, policyType });
+        }
+
+        if (policy) {
+            await client.addInteraction('Interested in Policy', `Client is interested in ${policy.policyName} policy.`);
+        }
+
+        return res.status(200).json({ newClientPolicy });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(503).json({ message: 'Network error. Try again' });
     }
 };
@@ -283,283 +286,9 @@ const uploadClientPolicyMedia = async (req, res) => {
         clientPolicy.markModified('data');
         await clientPolicy.save();
 
-        console.log(clientPolicy.data);
-
-        // res.status(200).json({ message: 'File URLs updated successfully', data: clientPolicy.data });
         res.sendStatus(200);
     } catch (error) {
         console.error(error);
-        res.status(503).json({ message: 'Network error. Try again' });
-    }
-}
-// working
-const fetchClientPolicy = async (req, res) => {
-    try {
-        const { clientPolicyId, companyId } = req.query;
-        const company = await Company.findById(companyId);
-
-        if (!company) return res.status(404).json({ message: 'Invalid company' });
-        const dejaVuIHaveBeenInThisPlaceBefore = await Quotation.findOne({ clientPolicyId: clientPolicyId, companyId: companyId });
-        if (dejaVuIHaveBeenInThisPlaceBefore) return res.status(401).json({ message: 'dejaVuIHaveBeenInThisPlaceBefore' });
-        const clientPolicy = await ClientPolicy.aggregate([
-            { $match: { _id: new mongoose.Types.ObjectId(clientPolicyId) } },
-            {
-                $lookup: {
-                    from: 'policies',
-                    localField: 'policyId',
-                    foreignField: '_id',
-                    as: 'format'
-                }
-            },
-            { $unwind: '$format' },
-            { $unset: ['data.email', 'data.phone'] },
-            {
-                $project: {
-                    _id: 1,
-                    clientId: 1,
-                    data: 1,
-                    createdAt: 1,
-                    updatedAt: 1,
-                    format: {
-                        policyName: 1,
-                        policyType: 1,
-                        policyDescription: 1,
-                        policyIcon: 1,
-                        policyForm: '$format.form',
-                    }
-                }
-            }
-        ]);
-        res.status(200).json(clientPolicy[0]);
-    } catch (error) {
-        console.log(error);
-        res.status(503).json({ message: 'Network error. Try again' });
-    }
-};
-// working
-const fetchAllUnassignedPolicies = async (req, res) => {
-    try {
-        const unassignedPolicies = await ClientPolicy.aggregate([
-            { $match: { stage: 'Interested' } },
-            {
-                $lookup: {
-                    from: 'clients',
-                    localField: 'clientId',
-                    foreignField: '_id',
-                    as: 'clientData'
-                }
-            },
-            { $unwind: '$clientData' },
-            {
-                $lookup: {
-                    from: 'policies',
-                    localField: 'policyId',
-                    foreignField: '_id',
-                    as: 'policyData'
-                }
-            },
-            { $unwind: '$policyData' },
-            {
-                $lookup: {
-                    from: 'combinedquotations',
-                    localField: 'quotation',
-                    foreignField: '_id',
-                    as: 'quotationData'
-                }
-            },
-            { $unwind: { path: '$quotationData', preserveNullAndEmptyArrays: true } },
-            {
-                $project: {
-                    data: 1,
-                    clientId: 1,
-                    policyId: 1,
-                    stage: 1,
-                    quotation: 1,
-                    clientDetails: {
-                        firstName: '$clientData.personalDetails.firstName',
-                        lastName: '$clientData.personalDetails.lastName',
-                        email: '$clientData.personalDetails.contact.email',
-                        phone: '$clientData.personalDetails.contact.phone',
-                        dob: '$clientData.personalDetails.dob',
-                        gender: '$clientData.personalDetails.gender',
-                    },
-                    format: {
-                        policyName: '$policyData.policyName',
-                        policyType: '$policyData.policyType',
-                        policyIcon: '$policyData.policyIcon',
-                        policyDescription: '$policyData.policyDescription',
-                        policyForm: '$policyData.form'
-                    },
-                    combinedQuotationDetails: {
-                        quotationData: '$quotationData.quotationData',
-                        status: '$quotationData.status',
-                        countTotalEmails: '$quotationData.countTotalEmails',
-                        countRecievedQuotations: '$quotationData.countRecievedQuotations',
-                        sentBy: '$quotationData.sentBy',
-                        createdAt: '$quotationData.createdAt',
-                        updatedAt: '$quotationData.updatedAt',
-                    },
-                    createdAt: 1,
-                    updatedAt: 1,
-                }
-            }
-        ]);
-
-        res.status(200).json(unassignedPolicies);
-    } catch (error) {
-        console.log(error);
-        res.status(503).json({ message: 'Network error. Try again' });
-    }
-};
-// working
-const fetchAllAssignedPolicies = async (req, res) => {
-    try {
-        const assignedPolicies = await ClientPolicy.aggregate([
-            { $match: { stage: 'Assigned', } },
-            {
-                $lookup: {
-                    from: 'clients',
-                    localField: 'clientId',
-                    foreignField: '_id',
-                    as: 'clientData'
-                }
-            },
-            { $unwind: '$clientData' },
-            {
-                $lookup: {
-                    from: 'policies',
-                    localField: 'policyId',
-                    foreignField: '_id',
-                    as: 'policyData'
-                }
-            },
-            { $unwind: '$policyData' },
-            {
-                $project: {
-                    data: 1,
-                    stage: 1,
-                    clientId: 1,
-                    policyId: 1,
-                    assignedBy: 1,
-                    clientDetails: {
-                        firstName: '$clientData.personalDetails.firstName',
-                        lastName: '$clientData.personalDetails.lastName',
-                        email: '$clientData.personalDetails.contact.email',
-                        phone: '$clientData.personalDetails.contact.phone',
-                        dob: '$clientData.personalDetails.dob',
-                        gender: '$clientData.personalDetails.gender',
-                    },
-                    format: {
-                        policyName: '$policyData.policyName',
-                        policyType: '$policyData.policyType',
-                        policyIcon: '$policyData.policyIcon',
-                        policyDescription: '$policyData.policyDescription',
-                        policyForm: '$policyData.form'
-                    },
-                    createdAt: 1,
-                    updatedAt: 1,
-                }
-            }
-        ]);
-
-        res.status(200).json(assignedPolicies);
-    } catch (error) {
-        console.log(error);
-        res.status(503).json({ message: 'Network error. Try again' });
-    }
-};
-// working
-const countAllAssignedPolicies = async (req, res) => {
-    try {
-        const clientPolicies = await ClientPolicy.find({ stage: 'Assigned' });
-        const count = clientPolicies.length;
-        res.status(200).json(count)
-    } catch (error) {
-        console.log(error);
-        res.status(503).json({ message: 'Network error. Try again' });
-    }
-};
-// working LATER: 'assignedBy' should be an ObjectId (but then import csv will be affected)
-const assignClientPolicy = async (req, res) => {
-    try {
-        const { assignPolicyID, formData } = req.body;
-        const { expiryDate, policyNo } = formData;
-        const clientPolicy = await ClientPolicy.findByIdAndUpdate(assignPolicyID, {
-            $set: {
-                stage: 'Assigned',
-                expiryDate: expiryDate,
-                policyNo: policyNo,
-                assignedBy: `${req.client?.personalDetails?.firstName} ${req.client?.personalDetails?.lastName}`
-            }
-        }, { new: true });
-        const policy = await Policy.findById(clientPolicy.policyId);
-        await Client.findByIdAndUpdate(
-            clientPolicy.clientId,
-            {
-                $push: {
-                    interactionHistory: {
-                        type: 'Assigned Policy',
-                        description: `A ${policy.policyName} (${policy.policyType}) policy was assigned to the client`
-                    }
-                },
-                $set: { userType: 'Client' }
-            }
-        );
-        res.sendStatus(200);
-    } catch (error) {
-        console.log(error);
-        res.status(503).json({ message: 'Network error. Try again' });
-    }
-};
-// working
-const uploadAssignClientPolicyMedia = async (req, res) => {
-    try {
-        const { assignPolicyID } = req.body;
-        const file = req.files[0];
-        const clientPolicy = await ClientPolicy.findById(assignPolicyID);
-        if (!clientPolicy) return res.status(404).json({ message: 'Client Policy not found.' });
-
-        clientPolicy.policyDocumentURL = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
-        await clientPolicy.save();
-        res.sendStatus(200);
-    } catch (error) {
-        console.log(error);
-        res.status(503).json({ message: 'Network error. Try again' });
-    }
-};
-// working
-const sendCombinedQuotation = async (req, res) => {
-    try {
-        const { clientPolicyId, combinedQuotationData } = req.body;
-        const combinedQuotation = await CombinedQuotation.findOneAndUpdate(
-            { clientPolicyId: clientPolicyId },
-            {
-                $set: {
-                    quotationData: combinedQuotationData,
-                    status: 'UploadedByAdmin'
-                }
-            }, { new: true }
-        );
-        const clientPolicy = await ClientPolicy.findByIdAndUpdate(clientPolicyId, {
-            $set: { quotation: combinedQuotation._id }
-        }, { new: true });
-
-        const policy = await Policy.findById(clientPolicy.policyId);
-        await Client.findByIdAndUpdate(
-            clientPolicy.clientId,
-            {
-                $push: {
-                    interactionHistory: {
-                        type: 'Quotation Recieved',
-                        description: `Excel with quotation for ${policy.policyName} (${policy.policyType}) recieved.`
-                    }
-                }
-            }
-        );
-
-        res.sendStatus(200);
-    } catch (error) {
-        console.log(error);
         res.status(503).json({ message: 'Network error. Try again' });
     }
 };
@@ -604,7 +333,336 @@ const uploadExisitingClientPolicyMedia = async (req, res) => {
         console.error(error);
         res.status(503).json({ message: 'Network error. Try again' });
     }
+};
+// working
+const fetchClientPolicy = async (req, res) => {
+    try {
+        const { clientPolicyId, companyId } = req.query;
+        const company = await Company.findById(companyId);
+
+        if (!company) return res.status(404).json({ message: 'Invalid company' });
+        const dejaVuIHaveBeenInThisPlaceBefore = await Quotation.findOne({ clientPolicyId: clientPolicyId, companyId: companyId });
+        if (dejaVuIHaveBeenInThisPlaceBefore) return res.status(401).json({ message: 'dejaVuIHaveBeenInThisPlaceBefore' });
+        const clientPolicy = await ClientPolicy.aggregate([
+            { $match: { _id: new mongoose.Types.ObjectId(clientPolicyId) } },
+            {
+                $lookup: {
+                    from: 'policies',
+                    localField: 'policyId',
+                    foreignField: '_id',
+                    as: 'format'
+                }
+            },
+            { $unwind: '$format' },
+            { $unset: ['data.email', 'data.phone'] },
+            {
+                $project: {
+                    _id: 1,
+                    clientId: 1,
+                    data: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    format: {
+                        policyName: 1,
+                        policyType: 1,
+                        policyDescription: 1,
+                        policyIcon: 1,
+                        policyForm: '$format.form',
+                    }
+                }
+            }
+        ]);
+        res.status(200).json(clientPolicy[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
+// working
+const fetchAllUnassignedPolicies = async (req, res) => {
+    try {
+        const unassignedPolicies = await ClientPolicy.aggregate([
+            { $match: { stage: 'Interested' } },
+            {
+                $lookup: {
+                    from: 'clients',
+                    localField: 'clientId',
+                    foreignField: '_id',
+                    as: 'clientData'
+                }
+            },
+            { $unwind: '$clientData' },
+            {
+                $lookup: {
+                    from: 'policies',
+                    localField: 'policyId',
+                    foreignField: '_id',
+                    as: 'policyData'
+                }
+            },
+            { $unwind: '$policyData' },
+            {
+                $lookup: {
+                    from: 'combinedquotations',
+                    localField: 'quotation',
+                    foreignField: '_id',
+                    as: 'quotationData'
+                }
+            },
+            { $unwind: { path: '$quotationData', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    data: 1,
+                    clientId: 1,
+                    policyId: 1,
+                    stage: 1,
+                    quotation: 1,
+                    associatedPoCs: 1,
+                    clientDetails: {
+                        firstName: '$clientData.personalDetails.firstName',
+                        lastName: '$clientData.personalDetails.lastName',
+                        email: '$clientData.personalDetails.contact.email',
+                        phone: '$clientData.personalDetails.contact.phone',
+                        dob: '$clientData.personalDetails.dob',
+                        gender: '$clientData.personalDetails.gender',
+                    },
+                    format: {
+                        policyName: '$policyData.policyName',
+                        policyType: '$policyData.policyType',
+                        policyIcon: '$policyData.policyIcon',
+                        policyDescription: '$policyData.policyDescription',
+                        policyForm: '$policyData.form'
+                    },
+                    combinedQuotationDetails: {
+                        quotationData: '$quotationData.quotationData',
+                        status: '$quotationData.status',
+                        countTotalEmails: '$quotationData.countTotalEmails',
+                        countRecievedQuotations: '$quotationData.countRecievedQuotations',
+                        sentBy: '$quotationData.sentBy',
+                        createdAt: '$quotationData.createdAt',
+                        updatedAt: '$quotationData.updatedAt',
+                    },
+                    createdAt: 1,
+                    updatedAt: 1,
+                }
+            }
+        ]);
+
+        res.status(200).json(unassignedPolicies);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
+// working
+const fetchAllAssignedPolicies = async (req, res) => {
+    try {
+        const assignedPolicies = await ClientPolicy.aggregate([
+            { $match: { stage: 'Assigned', } },
+            {
+                $lookup: {
+                    from: 'clients',
+                    localField: 'clientId',
+                    foreignField: '_id',
+                    as: 'clientData'
+                }
+            },
+            { $unwind: '$clientData' },
+            {
+                $lookup: {
+                    from: 'policies',
+                    localField: 'policyId',
+                    foreignField: '_id',
+                    as: 'policyData'
+                }
+            },
+            { $unwind: '$policyData' },
+            {
+                $project: {
+                    data: 1,
+                    stage: 1,
+                    clientId: 1,
+                    policyId: 1,
+                    policyNo: 1,
+                    policyDocumentURL: 1,
+                    assignedBy: 1,
+                    clientDetails: {
+                        firstName: '$clientData.personalDetails.firstName',
+                        lastName: '$clientData.personalDetails.lastName',
+                        email: '$clientData.personalDetails.contact.email',
+                        phone: '$clientData.personalDetails.contact.phone',
+                        dob: '$clientData.personalDetails.dob',
+                        gender: '$clientData.personalDetails.gender',
+                    },
+                    format: {
+                        policyName: '$policyData.policyName',
+                        policyType: '$policyData.policyType',
+                        policyIcon: '$policyData.policyIcon',
+                        policyDescription: '$policyData.policyDescription',
+                        policyForm: '$policyData.form'
+                    },
+                    createdAt: 1,
+                    updatedAt: 1,
+                }
+            }
+        ]);
+
+        res.status(200).json(assignedPolicies);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
+// working
+const countAllAssignedPolicies = async (req, res) => {
+    try {
+        const clientPolicies = await ClientPolicy.find({ stage: 'Assigned' });
+        const count = clientPolicies.length;
+        res.status(200).json(count)
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
+// working
+const updateClientPolicy = async (req, res) => {
+    try {
+        const clientId = req.client._id;
+        const isCurrentClientEmployee = await Employee.findOne({ clientId: clientId });
+        if (!isCurrentClientEmployee) return res.status(400).json({ message: 'Unauthorised access' });
+
+        const { formData, selectedPolicyId } = req.body;
+
+        const updatedPolicy = await ClientPolicy.findByIdAndUpdate(selectedPolicyId,
+            { $set: { data: formData } },
+            { new: true }
+        );
+
+        if (!updatedPolicy) return res.status(404).json({ message: 'Policy not found!' });
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
 }
+// working
+const uploadUpdateClientPolicyMedia = async (req, res) => {
+    try {
+        const clientId = req.client._id;
+        const isCurrentClientEmployee = await Employee.findOne({ clientId: clientId });
+        if (!isCurrentClientEmployee) return res.status(400).json({ message: 'Unauthorised access' });
+
+        const { selectedPolicyId } = req.body;
+
+        const existingPolicy = await ClientPolicy.findById(selectedPolicyId);
+        if (!existingPolicy) return res.status(404).json({ message: 'Policy not found' });
+
+        for (const file of req.files) {
+            const oldFileUrl = existingPolicy.data[file.fieldname];
+            if (oldFileUrl) {
+                const oldFilePath = path.join(__dirname, 'uploads', path.basename(oldFileUrl));
+                if (fs.existsSync(oldFilePath)) fs.unlinkSync(oldFilePath)
+            }
+
+            const fileURL = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
+
+            const updatedPolicy = await ClientPolicy.findByIdAndUpdate(selectedPolicyId,
+                { $set: { [`data.${file.fieldname}`]: fileURL } },
+                { new: true }
+            );
+        }
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+}
+// working LATER: 'assignedBy' should be an ObjectId (but then import csv will be affected)
+const assignClientPolicy = async (req, res) => {
+    try {
+        const { assignPolicyID, formData } = req.body;
+        const { expiryDate, policyNo } = formData;
+        const clientPolicy = await ClientPolicy.findByIdAndUpdate(assignPolicyID, {
+            $set: {
+                stage: 'Assigned',
+                expiryDate: expiryDate,
+                policyNo: policyNo,
+                assignedBy: `${req.client?.personalDetails?.firstName} ${req.client?.personalDetails?.lastName}`
+            }
+        }, { new: true });
+        const policy = await Policy.findById(clientPolicy.policyId);
+        await Client.findByIdAndUpdate(
+            clientPolicy.clientId,
+            {
+                $push: {
+                    interactionHistory: {
+                        type: 'Assigned Policy',
+                        description: `A ${policy.policyName} (${policy.policyType}) policy was assigned to the client`
+                    }
+                },
+                $set: { userType: 'Client' }
+            }
+        );
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
+// working
+const uploadAssignClientPolicyMedia = async (req, res) => {
+    try {
+        const { assignPolicyID } = req.body;
+        const file = req.files[0];
+        const clientPolicy = await ClientPolicy.findById(assignPolicyID);
+        if (!clientPolicy) return res.status(404).json({ message: 'Client Policy not found.' });
+
+        clientPolicy.policyDocumentURL = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
+        await clientPolicy.save();
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
+// working
+const sendCombinedQuotation = async (req, res) => {
+    try {
+        const { clientPolicyId, combinedQuotationData } = req.body;
+        const combinedQuotation = await CombinedQuotation.findOneAndUpdate(
+            { clientPolicyId: clientPolicyId },
+            {
+                $set: {
+                    quotationData: combinedQuotationData,
+                    status: 'UploadedByAdmin'
+                }
+            }, { new: true }
+        );
+        const clientPolicy = await ClientPolicy.findByIdAndUpdate(clientPolicyId, {
+            $set: { quotation: combinedQuotation._id }
+        }, { new: true });
+
+        const policy = await Policy.findById(clientPolicy.policyId);
+        await Client.findByIdAndUpdate(
+            clientPolicy.clientId,
+            {
+                $push: {
+                    interactionHistory: {
+                        type: 'Quotation Recieved',
+                        description: `Excel with quotation for ${policy.policyName} (${policy.policyType}) recieved.`
+                    }
+                }
+            }
+        );
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
 // working
 const exportCsv = async (req, res) => {
     try {
@@ -647,7 +705,6 @@ const exportCsv = async (req, res) => {
 // working TODO: update with new dynamic form
 const importCsv = async (req, res) => {
     try {
-        console.log('huu')
         const csvData = await csv().fromFile(req.file.path);
 
         const operations = csvData.map(async (row) => {
@@ -788,15 +845,17 @@ const importCsv = async (req, res) => {
 export {
     createClientPolicy,
     uploadClientPolicyMedia,
+    uploadExisitingClientPolicy,
+    uploadExisitingClientPolicyMedia,
     fetchClientPolicy,
     fetchAllUnassignedPolicies,
     fetchAllAssignedPolicies,
     countAllAssignedPolicies,
+    updateClientPolicy,
+    uploadUpdateClientPolicyMedia,
     assignClientPolicy,
     uploadAssignClientPolicyMedia,
     sendCombinedQuotation,
-    uploadExisitingClientPolicy,
-    uploadExisitingClientPolicyMedia,
     exportCsv,
     importCsv,
 };
@@ -822,7 +881,7 @@ export {
 //         )
 //         res.sendStatus(200);
 //     } catch (error) {
-//         console.log(error);
+//         console.error(error);
 //         res.status(503).json({ message: 'Network error. Try again' });
 //     }
 // };

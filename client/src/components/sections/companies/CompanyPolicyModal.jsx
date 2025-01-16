@@ -86,7 +86,7 @@ const CompanyPolicyModal = ({ policyData, onClose, onRemovePolicy }) => {
                             value={policy?.contactPerson?.name}
                         />
                         <TextField
-                            label='Phone'
+                            label='Phone (excluding +91)'
                             slotProps={{ input: { readOnly: true } }}
                             value={policy?.contactPerson?.phone}
                         />

@@ -1,15 +1,16 @@
 import fs from 'fs';
 import ejs from 'ejs';
 import path from 'path';
-import jwt from 'jsonwebtoken';
+import axios from 'axios';
 import csv from 'csvtojson';
+import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 import { Parser } from '@json2csv/plainjs';
 // importing models
+import SIP from '../models/sip.model.js';
 import Client from '../models/client.model.js';
 import Employee from '../models/employee.model.js';
 import ClientPolicy from '../models/clientPolicy.model.js';
-import SIP from '../models/sip.model.js';
 import GeneralInsurance from '../models/generalInsurance.model.js';
 // importing helper functions
 import { condenseClientInfo, cookiesOptions, generateAccessAndRefreshTokens, transporter } from '../utils/helperFunctions.js';
@@ -128,8 +129,7 @@ const create = async (req, res) => {
             }
         });
 
-        const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(newClient);
-        const clientInfo = await condenseClientInfo(newClient);
+        await generateAccessAndRefreshTokens(newClient);
 
         res.sendStatus(200);
     } catch (error) {
@@ -222,6 +222,7 @@ const fetchPoliciesData = async (req, res) => {
                     policyId: 1,
                     data: 1,
                     stage: 1,
+                    policyNo: 1,
                     createdAt: 1,
                     updatedAt: 1,
                     expiryDate: 1,
@@ -460,7 +461,7 @@ const logout = async (req, res) => {
             .json({ message: 'Successfully logged out' });
     } catch (error) {
         console.error(error);
-        res.status(503).json({ message: 'Network error. Try again' })
+        res.status(503).json({ message: 'Network error. Try again' });
     }
 };
 // working
@@ -617,8 +618,7 @@ const exportCsv = async (req, res) => {
         res.status(503).json({ message: 'Network error. Try again' });
     }
 };
-// working LATER: maybe assignPasswordFunction
-// No password for imported clients
+// working LATER: maybe assignPasswordFunction; No password for imported clients
 const importCsv = async (req, res) => {
     try {
         const csvData = await csv().fromFile(req.file.path);
@@ -712,6 +712,287 @@ const importCsv = async (req, res) => {
         res.status(503).json({ message: 'Network error. Try again' });
     }
 };
+// working
+const sendTemplateMessageForCallback = async (phoneNumber, adminName, clientName, clientNumber, clientMessage, clientSource) => {
+    try {
+        const url = `https://graph.facebook.com/v18.0/${process.env.PHONE_NUMBER_ID}/messages`;
+
+        const headers = {
+            Authorization: `Bearer ${process.env.GRAPH_API_TOKEN}`,
+            'Content-Type': 'application/json',
+        };
+
+        const payload = {
+            messaging_product: 'whatsapp',
+            recipient_type: 'individual',
+            to: phoneNumber,
+            type: 'template',
+            template: {
+                name: '	paaras_request_callback_one',
+                language: { code: 'en_US' },
+                components: [
+                    {
+                        type: "body",
+                        parameters: [
+                            { type: "text", text: adminName },
+                            { type: "text", text: clientName },
+                            { type: "text", text: clientNumber },
+                            { type: "text", text: clientSource },
+                            { type: "text", text: clientMessage },
+                        ]
+                    }
+                ]
+            },
+        };
+
+        const response = await axios.post(url, payload, { headers });
+        return response.data;
+    } catch (error) {
+        console.error('Error sending template message:', error.response?.data || error.message);
+        throw error;
+    }
+};
+// working
+const sendRequestCallbackWA = async ({ to, clientName, clientNumber, clientMessage, clientSource }) => {
+    for (let i = 0; i < to.length; i++) {
+        const phoneNumber = `91${to[i]?.phones}`;
+        const adminName = to[i]?.name;
+
+        const result = await sendTemplateMessageForCallback(phoneNumber, adminName, clientName, clientNumber, clientMessage, clientSource);
+        console.log(result);
+    }
+};
+// working TODO: Add proper template
+const sendRequestCallbackMail = async ({ to, clientName, clientNumber, clientMessage, clientSource }) => {
+    // const emailTemplate = fs.readFileSync('./assets/getQuotationEmailTemplate.ejs', 'utf-8');
+    for (let i = 0; i < to.length; i++) {
+        // const emailContent = ejs.render(emailTemplate, {
+        //     year: new Date().getFullYear(),
+        // });
+
+        const mailOptions = {
+            from: process.env.SMTP_EMAIL,
+            to: to[i].emails?.toString(),
+            subject: 'Request Callback!',
+            html: `Hi ${to[i].name},
+                    <br /><br />
+                    You've received a callback request from a client.
+                    <br /><br />
+                    Client Details:<br />
+                    Name: ${clientName}<br />
+                    Phone Number: ${clientNumber}<br />
+                    Source: ${clientSource}<br />
+                    Message: ${clientMessage}<br/>
+                    <br /><br />
+                    Please reach out to the client at your earliest convenience to assist them with their query.
+                    <br /><br />
+                    Best regards,<br />
+                    Paaras Financials Team`
+        };
+        await transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error on Nodemailer side: ', error);
+            }
+        });
+    }
+};
+// working
+const sendRequestCallback = async (name, phone, message, source) => {
+    const result = await Employee.aggregate([
+        {
+            $lookup: {
+                from: 'clients',
+                localField: 'clientId',
+                foreignField: '_id',
+                as: 'clientDetails'
+            }
+        },
+        { $unwind: '$clientDetails' },
+        {
+            $project: {
+                _id: 0,
+                name: {
+                    $concat: [
+                        '$clientDetails.personalDetails.firstName',
+                        ' ',
+                        '$clientDetails.personalDetails.lastName'
+                    ]
+                },
+                phones: '$clientDetails.personalDetails.contact.phone',
+                emails: '$clientDetails.personalDetails.contact.email'
+            }
+        }
+    ]);
+
+    console.log(result);
+
+    if (result.length > 0) {
+        await sendRequestCallbackWA({
+            to: result,
+            clientName: name || 'NA',
+            clientNumber: phone || 'NA',
+            clientMessage: message || 'NA',
+            clientSource: source || 'NA',
+        });
+        await sendRequestCallbackMail({
+            to: result,
+            clientName: name || 'NA',
+            clientNumber: phone || 'SNA',
+            clientMessage: message || 'NA',
+            clientSource: source || 'NA',
+        });
+    }
+};
+// working
+const requestCallbackViaWhatsApp = async (req, res) => {
+    try {
+        const { clientId, name, phone, message } = req.body;
+        console.log(req.body);
+        if (clientId) {
+            const updatedClient = await Client.findByIdAndUpdate(clientId, {
+                $push: {
+                    notes: { message: message || '', requestCallback: true, source: 'WhatsApp' },
+                    interactionHistory: {
+                        type: 'Callback Requested',
+                        description: 'Client has requested a callback.',
+                    },
+                }
+            }, { new: true });
+            await sendRequestCallback(
+                `${updatedClient?.personalDetails?.firstName}${updatedClient?.personalDetails?.lastName}`,
+                updatedClient?.personalDetails?.contact?.phone,
+                message,
+                'WhatsApp'
+            );
+            return res.status(200).json({ message: 'Callback requested' });
+        } else if (name && phone) {
+            const newClient = await Client.create({
+                userType: 'Lead',
+                password: `${name}@${phone}`,
+                personalDetails: {
+                    firstName: name,
+                    lastName: '',
+                    contact: {
+                        email: '',
+                        phone: phone
+                    },
+                },
+                notes: {
+                    message: message || '',
+                    requestCallback: true,
+                    source: 'WhatsApp'
+                },
+            });
+            await newClient.addInteraction('Callback Requested', 'Client has requested a callback.');
+
+            await sendRequestCallback(name, phone, message, 'WhatsApp');
+            return res.status(200).json({ message: 'Password is [WA_DISPLAY_NAME]@[PHONE_NUMBER]' });
+        } else return res.status(400).json({ message: 'Invalid data' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
+// working
+const requestCallbackViaWebsite = async (req, res) => {
+    try {
+        const clientId = req.client._id;
+        const { message } = req.body?.formData;
+
+        const updatedClient = await Client.findByIdAndUpdate(
+            clientId,
+            {
+                $push: {
+                    notes: { message: message || '', requestCallback: true, source: 'Website' },
+                    interactionHistory: {
+                        type: 'Callback Requested',
+                        description: `Client has requested a callback.`,
+                    },
+                }
+            },
+            { new: true }
+        );
+
+        if (!updatedClient) return res.status(404).json({ message: 'Client not found.' });
+
+        const name = `${updatedClient.personalDetails.firstName} ${updatedClient.personalDetails.lastName}`;
+        const phone = updatedClient?.personalDetails?.contact?.phone;
+        await sendRequestCallback(name, phone, message, 'Website');
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
+// working
+const fetchAllRequestCallbacks = async (req, res) => {
+    try {
+        const currentClientId = req.client._id;
+        const isCurrentClientEmployee = await Employee.findOne({ clientId: currentClientId });
+        if (!isCurrentClientEmployee) return res.status(400).json({ message: 'Unauthorised access' });
+
+        const results = await Client.aggregate([
+            { $match: { "notes.requestCallback": true } },
+            {
+                $project: {
+                    clientName: { $concat: ["$personalDetails.firstName", " ", "$personalDetails.lastName"] },
+                    email: "$personalDetails.contact.email",
+                    phone: "$personalDetails.contact.phone",
+                    notes: {
+                        $filter: {
+                            input: "$notes",
+                            as: "note",
+                            cond: { $eq: ["$$note.requestCallback", true] }
+                        }
+                    }
+                }
+            },
+            { $unwind: "$notes" },
+            {
+                $project: {
+                    clientName: 1,
+                    email: 1,
+                    phone: 1,
+                    _id: 1,
+                    notesId: "$notes._id",
+                    message: "$notes.message",
+                    requestCallback: "$notes.requestCallback",
+                    source: "$notes.source",
+                    createdAt: "$notes.createdAt",
+                    updatedAt: "$notes.updatedAt"
+                }
+            }
+        ]);
+
+        res.status(200).json(results);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
+// working
+const resolveRequestCallback = async (req, res) => {
+    try {
+        const currentClientId = req.client._id;
+        const isCurrentClientEmployee = await Employee.findOne({ clientId: currentClientId });
+        if (!isCurrentClientEmployee) return res.status(400).json({ message: 'Unauthorised access' });
+
+        const { clientId, notesId } = req.query;
+        const updatedClient = await Client.updateOne(
+            { _id: clientId, "notes._id": notesId },
+            { $set: { "notes.$.requestCallback": false } }
+        );
+
+        if (updatedClient.modifiedCount === 0) return res.status(404).json({ message: 'Note not found or already resolved' });
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
 
 export {
     register,
@@ -730,4 +1011,19 @@ export {
     findClient,
     exportCsv,
     importCsv,
+    requestCallbackViaWebsite,
+    requestCallbackViaWhatsApp,
+    fetchAllRequestCallbacks,
+    resolveRequestCallback,
 };
+
+// const requestCallbackViaWhatsApp = async (req, res) => {
+//     try {
+//         const { name, phone, message } = req.query;
+//         await sendRequestCallback(name, phone, message, 'WhatsApp');
+//         res.sendStatus(200);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(503).json({ message: 'Network error. Try again' });
+//     }
+// };

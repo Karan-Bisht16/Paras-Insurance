@@ -132,22 +132,5 @@ const sipSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-sipSchema.post('save', async function (document, next) {
-    try {
-        await Client.findByIdAndUpdate(document.clientId, {
-            $push: {
-                interactionHistory: {
-                    type: 'SIP Requested',
-                    description: 'A request to start a new SIP has been submitted.',
-                },
-            },
-        });
-    } catch (error) {
-        console.error('Error updating client interaction history:', error);
-    }
-
-    next();
-});
-
 const SIP = mongoose.model('SIP', sipSchema);
 export default SIP;

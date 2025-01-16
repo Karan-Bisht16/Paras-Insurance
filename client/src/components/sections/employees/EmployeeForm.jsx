@@ -67,7 +67,7 @@ const EmployeeForm = ({ onClose, onSubmit }) => {
                             value={formData.email} onChange={handleChange}
                         />
                         <TextField
-                            type='tel' label='Phone' name='phone' required
+                            type='tel' label='Phone (excluding +91)' name='phone' required
                             InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                             value={formData.phone} onChange={handleChange}
                         />

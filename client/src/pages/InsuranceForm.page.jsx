@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { CircularProgress } from '@mui/material';
+import { Button, CircularProgress } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
 import { tailChase } from 'ldrs';
 // importing api end-points
@@ -24,10 +24,6 @@ const InsuranceForm = () => {
     const [formData, setFormData] = useState({});
     const [files, setFiles] = useState({});
     const handleFormDataChange = (event) => {
-        // const { name, value } = event.target;
-        // setFormData(prevFormData => {
-        //     return { ...prevFormData, [name]: value };
-        // });
         const { name, value, type, files } = event.target;
 
         if (type === "file") {
@@ -58,13 +54,14 @@ const InsuranceForm = () => {
         form.sections.forEach((section) => {
             section.fields.forEach((field) => {
                 if (field.type === 'repeat') {
+                    dataFormat[field.name] = field.minCount;
                     for (let i = 1; i <= field.minCount; i++) {
                         field.children.forEach((child) => {
                             const key = `${i}${child.id}`;
                             if (child.type === 'checkbox') {
                                 dataFormat[key] = [];
-                            } else if (child.default) {
-                                dataFormat[key] = child.default;
+                            } else if (child.defaultValue) {
+                                dataFormat[key] = child.defaultValue;
                             } else if (child.type === 'radio') {
                                 dataFormat[key] = null;
                             } else {
@@ -74,8 +71,8 @@ const InsuranceForm = () => {
                     }
                 } else if (field.type === 'checkbox') {
                     dataFormat[field.id] = [];
-                } else if (field.default) {
-                    dataFormat[field.id] = field.default;
+                } else if (field.defaultValue) {
+                    dataFormat[field.id] = field.defaultValue;
                 } else if (field.type === 'radio') {
                     dataFormat[field.id] = null;
                 } else {
@@ -157,13 +154,19 @@ const InsuranceForm = () => {
         setSubmitting(true);
         try {
             if (isLoggedIn) {
-                const copyCondenseClientInfo = structuredClone(condenseClientInfo);
-                delete copyCondenseClientInfo._id;
-                const { data } = await createClientPolicy({ formData: { ...copyCondenseClientInfo, ...formData }, policyId: currentPolicyId, clientId: condenseClientInfo._id });
-                const { clientInfo, newClientPolicy } = data;
+                const { data } = await createClientPolicy({
+                    formData: {
+                        ...formData,
+                        firstName: condenseClientInfo?.firstName,
+                        lastName: condenseClientInfo?.lastName || '',
+                        email: condenseClientInfo?.email,
+                        phone: condenseClientInfo?.phone,
+                    },
+                    policyId: currentPolicyId,
+                    clientId: condenseClientInfo._id
+                });
+                const { newClientPolicy } = data;
                 await uploadClientPolicyMedia({ ...files, clientPolicyId: newClientPolicy._id });
-                setCondenseClientInfo(clientInfo);
-                setSubmitting(false);
                 navigate('/', { state: { status: 'success', message: 'Policy added to your account per your interest!', time: new Date().getTime() } })
             } else {
                 setFormData(prevFormData => { return { ...prevFormData, ...defaultFormData } });
@@ -180,6 +183,7 @@ const InsuranceForm = () => {
         } catch (error) {
             handleError(error);
         }
+        setSubmitting(false);
     }
 
     const handleLogin = async (password) => {
@@ -194,11 +198,21 @@ const InsuranceForm = () => {
 
                 const copyCondenseClientInfo = structuredClone(data);
                 delete copyCondenseClientInfo._id;
-                const result = await createClientPolicy({ formData: { ...copyCondenseClientInfo, ...formData }, policyId: currentPolicyId, clientId: data._id });
-                const { clientInfo, newClientPolicy } = result?.data;
-                await uploadClientPolicyMedia({ ...files, clientPolicyId: newClientPolicy._id });
+                setSubmitting(true);
 
-                setCondenseClientInfo(clientInfo);
+                const result = await createClientPolicy({
+                    formData: {
+                        ...formData,
+                        firstName: condenseClientInfo?.firstName,
+                        lastName: condenseClientInfo?.lastName || '',
+                        email: condenseClientInfo?.email,
+                        phone: condenseClientInfo?.phone,
+                    },
+                    policyId: currentPolicyId,
+                    clientId: data._id
+                });
+                const { newClientPolicy } = result?.data;
+                await uploadClientPolicyMedia({ ...files, clientPolicyId: newClientPolicy._id });
             } else if (loginOrRegister === 'Register') {
                 const { data } = await register({ ...defaultFormData, password });
                 await setCondenseClientInfo(data);
@@ -207,17 +221,28 @@ const InsuranceForm = () => {
 
                 const copyCondenseClientInfo = structuredClone(data);
                 delete copyCondenseClientInfo._id;
-                const result = await createClientPolicy({ formData: { ...copyCondenseClientInfo, ...formData }, policyId: currentPolicyId, clientId: data._id });
-                const { clientInfo, newClientPolicy } = result?.data;
-                await uploadClientPolicyMedia({ ...files, clientPolicyId: newClientPolicy._id });
+                setSubmitting(true);
 
-                setCondenseClientInfo(clientInfo);
+                const result = await createClientPolicy({
+                    formData: {
+                        ...formData,
+                        firstName: condenseClientInfo?.firstName,
+                        lastName: condenseClientInfo?.lastName || '',
+                        email: condenseClientInfo?.email,
+                        phone: condenseClientInfo?.phone,
+                    },
+                    policyId: currentPolicyId,
+                    clientId: data._id
+                });
+                const { newClientPolicy } = result?.data;
+                await uploadClientPolicyMedia({ ...files, clientPolicyId: newClientPolicy._id });
             }
 
             navigate('/', { state: { status: 'success', message: 'Policy added to your account per your interest!', time: new Date().getTime() } })
         } catch (error) {
             setRegisterModalError(error?.response?.data?.message);
         }
+        setSubmitting(false);
     }
 
     tailChase.register();
@@ -297,23 +322,23 @@ const InsuranceForm = () => {
                             }
                             <FormSection
                                 fields={formFields.sections[currentSection].fields}
-                                data={formData} handleFormDataChange={handleFormDataChange}
+                                data={formData} setData={setFormData} handleFormDataChange={handleFormDataChange}
                             />
                             <div className='flex justify-between mt-6'>
                                 {currentSection > 0 && (
-                                    <button type='button' onClick={handlePrevious} className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded'>
+                                    <Button type='button' onClick={handlePrevious} className='!text-gray-900 !bg-gray-300 !hover:bg-gray-400'>
                                         Previous
-                                    </button>
+                                    </Button>
                                 )}
                                 {currentSection < formFields.sections.length - 1 && (
-                                    <button type='button' onClick={handleNext} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
+                                    <Button type='button' onClick={handleNext} className='!text-white !bg-gray-900 !hover:opacity-95'>
                                         Next
-                                    </button>
+                                    </Button>
                                 )}
                                 {currentSection === formFields.sections.length - 1 && (
-                                    <button type='submit' className='bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
+                                    <Button type='submit' className='!text-white !bg-gray-900 !hover:opacity-95'>
                                         {formFields.submitButtonLabel}
-                                    </button>
+                                    </Button>
                                 )}
                             </div>
                             <div className='relative'>

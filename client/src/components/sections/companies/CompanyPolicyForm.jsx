@@ -141,7 +141,7 @@ const CompanyPolicyForm = ({ onClose, onSubmit }) => {
                             value={formData.contactPersonName} onChange={handleChange}
                         />
                         <TextField
-                            type='tel' label='Phone' name='contactPersonPhone' variant='outlined' required
+                            type='tel' label='Phone (excluding +91)' name='contactPersonPhone' variant='outlined' required
                             InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                             value={formData.contactPersonPhone} onChange={handleChange}
                         />

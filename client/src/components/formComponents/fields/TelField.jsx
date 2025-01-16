@@ -1,4 +1,6 @@
 import { TextField } from "@mui/material";
+// importing helper functions
+import { getSuffix } from "../../../utils/helperFunctions";
 
 const TelField = ({ label, id, name, placeholder, required, pattern, data, handleFormDataChange, repeat, repeatIndex }) => {
     const handleEnter = (event) => {
@@ -12,9 +14,9 @@ const TelField = ({ label, id, name, placeholder, required, pattern, data, handl
             {repeat
                 ?
                 <TextField
-                    type='tel' label={label} id={id} name={`${repeatIndex}${name}`} placeholder={placeholder} required={required} pattern={pattern}
+                    type='tel' label={`${repeatIndex}${getSuffix(repeatIndex)} ${label}`} id={id} name={`${repeatIndex}${name}`} placeholder={placeholder} required={required} pattern={pattern}
                     InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
-                    value={data[name]} onChange={handleFormDataChange} onKeyDown={handleEnter}
+                    value={data[`${repeatIndex}${name}`]} onChange={handleFormDataChange} onKeyDown={handleEnter}
                     className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
                 />
                 :

@@ -14,7 +14,21 @@ const interactionSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     }
-})
+});
+const notesSchema = new mongoose.Schema({
+    requestCallback: {
+        type: Boolean,
+        default: true,
+    },
+    message: {
+        type: String,
+        default: '',
+    },
+    source: {
+        type: String,
+        default: 'Website',
+    }
+}, { timestamps: true });
 
 const clientSchema = new mongoose.Schema({
     userType: {
@@ -194,7 +208,7 @@ const clientSchema = new mongoose.Schema({
         default: [],
     },
     notes: {
-        type: mongoose.Schema.Types.Array,
+        type: [notesSchema],
         default: [],
     }
 }, { timestamps: true });

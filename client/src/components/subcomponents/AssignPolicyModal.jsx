@@ -39,7 +39,7 @@ const AssignPolicyModal = ({ closeAssignPolicyModal, onSubmit, formData, onFormD
                                 className='w-full !mb-2'
                             />
                             <TextField
-                                type='text' label='Phone' name='phone' required
+                                type='text' label='Phone (excluding +91)' name='phone' required
                                 InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                                 value={formData.phone} onChange={onFormDataChange}
                                 className='w-full !mb-2'

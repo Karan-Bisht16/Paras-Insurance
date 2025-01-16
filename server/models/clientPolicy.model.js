@@ -1,7 +1,4 @@
 import mongoose from 'mongoose';
-// importing models
-import Client from './client.model.js';
-import Policy from './policy.model.js';
 
 const clientPolicySchema = new mongoose.Schema({
     policyId: {
@@ -46,29 +43,12 @@ const clientPolicySchema = new mongoose.Schema({
         type: String,
         enum: ['AssignedBySystem', 'UploadedByUser'],
         default: 'AssignedBySystem'
+    },
+    associatedPoCs: {
+        type: mongoose.Schema.Types.Mixed,
+        default: []
     }
 }, { timestamps: true });
-
-clientPolicySchema.post('save', async function (document, next) {
-    try {
-        const policy = await Policy.findById(document.policyId);
-
-        if (policy) {
-            await Client.findByIdAndUpdate(document.clientId, {
-                $push: {
-                    interactionHistory: {
-                        type: 'Interested in Policy',
-                        description: `Client is interested in ${policy.policyName} policy.`,
-                    },
-                },
-            });
-        }
-    } catch (error) {
-        console.error('Error updating client interaction history:', error);
-    }
-
-    next();
-});
 
 const ClientPolicy = mongoose.model('ClientPolicy', clientPolicySchema);
 export default ClientPolicy;
