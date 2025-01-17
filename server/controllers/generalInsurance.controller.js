@@ -1,8 +1,11 @@
+import path from 'path';
 import { ObjectId } from 'mongodb';
 // importing models
 import Client from "../models/client.model.js";
 import GeneralInsurance from "../models/generalInsurance.model.js";
 import Employee from '../models/employee.model.js';
+
+const __dirname = path.resolve();
 
 // working
 const createGeneralInsurance = async (req, res) => {
@@ -57,7 +60,7 @@ const uploadGeneralInsuranceMedia = async (req, res) => {
             } else if (fieldName === 'aadhaar') {
                 generalInsurance.financialDetails.aadhaarURL = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
             } else if (fieldName === 'cancelledCheque') {
-                generalInsurance.financialDetails.accountDetails.cancelledCheque = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
+                generalInsurance.financialDetails.accountDetails.cancelledChequeURL = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
             }
         }
 
@@ -185,6 +188,36 @@ const fetchAllAssignedGeneralInsurances = async (req, res) => {
         res.status(503).json({ message: 'Network error. Try again' })
     }
 };
+// working
+const updateGeneralInsurance = async (req, res) => {
+    try {
+        const clientId = req.client._id;
+        const isCurrentClientEmployee = await Employee.findOne({ clientId: clientId });
+        if (!isCurrentClientEmployee) return res.status(400).json({ message: 'Unauthorised access' });
+
+        const { formData, selectedGeneralInsuranceId, policyType } = req.body;
+        const { personalDetails, financialDetails } = formData;
+
+        if (
+            !personalDetails?.firstName ||
+            !personalDetails?.contact?.email ||
+            !personalDetails?.contact?.phone
+        ) return res.status(400).json({ message: 'First Name, Email, and Phone are required.' });
+
+        const updatedGeneralInsurance = await GeneralInsurance.findByIdAndUpdate(selectedGeneralInsuranceId,
+            { $set: { personalDetails, financialDetails, policyType } },
+            { new: true }
+        );
+
+        if (!updatedGeneralInsurance) return res.status(404).json({ message: 'General Insurance not found!' });
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+}
+
 // working LATER: 'assignedBy' should be an ObjectId (but then import csv will be affected)
 const assignGeneralInsurance = async (req, res) => {
     try {
@@ -212,7 +245,7 @@ const assignGeneralInsurance = async (req, res) => {
         );
         res.sendStatus(200);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(503).json({ message: 'Network error. Try again' });
     }
 };
@@ -228,7 +261,7 @@ const uploadAssignGeneralInsuranceMedia = async (req, res) => {
         await generalInsurance.save();
         res.sendStatus(200);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(503).json({ message: 'Network error. Try again' });
     }
 };
@@ -239,6 +272,7 @@ export {
     fetchGeneralInsurances,
     fetchAllUnassignedGeneralInsurances,
     fetchAllAssignedGeneralInsurances,
+    updateGeneralInsurance,
     assignGeneralInsurance,
     uploadAssignGeneralInsuranceMedia
 }

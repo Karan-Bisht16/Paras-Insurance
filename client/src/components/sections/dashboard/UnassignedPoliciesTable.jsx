@@ -206,6 +206,8 @@ const UnassignedPoliciesTable = ({ unassignedPolicies, onAssignPolicy, reload })
                 await uploadUpdateClientPolicyMedia({ ...files, selectedPolicyId: selectedPolicyId });
             }
             reload();
+            setSnackbarValue({message: 'Policy details updated successfully!', status: 'success'});
+            setSnackbarState(true);
             return false;
         } catch (error) {
             return error?.response?.data?.message;

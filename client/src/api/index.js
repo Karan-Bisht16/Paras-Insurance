@@ -114,6 +114,7 @@ export const uploadSipMedia = (media) => API.post('/sip/uploadMedia', media, {
 export const fetchSips = (clientId) => API.get('/sip/fetchSips', { params: clientId });
 export const fetchAllUnassignedSips = () => API.get('/sip/fetchAllUnassigned');
 export const fetchAllAssignedSips = () => API.get('/sip/fetchAllAssigned');
+export const updateSip = (data) => API.post('/sip/updateSip', data);
 export const assignSip = (data) => API.post('/sip/assignSip', data);
 export const uploadAssignSipMedia = (media) => API.post('/sip/uploadAssignSipMedia', media, {
     headers: {
@@ -131,6 +132,7 @@ export const uploadGeneralInsuranceMedia = (media) => API.post('/generalInsuranc
 export const fetchGeneralInsurances = (clientId) => API.get('/generalInsurance/fetchGeneralInsurances', { params: clientId });
 export const fetchAllUnassignedGeneralInsurances = () => API.get('/generalInsurance/fetchAllUnassigned');
 export const fetchAllAssignedGeneralInsurances = () => API.get('/generalInsurance/fetchAllAssigned');
+export const updateGeneralInsurance = (data) => API.post('/generalInsurance/updateGeneralInsurance', data);
 export const assignGeneralInsurance = (data) => API.post('/generalInsurance/assignGeneralInsurance', data);
 export const uploadAssignGeneralInsuranceMedia = (media) => API.post('/generalInsurance/uploadAssignGeneralInsuranceMedia', media, {
     headers: {

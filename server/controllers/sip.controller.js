@@ -48,7 +48,7 @@ const uploadSipMedia = async (req, res) => {
         const { sipId } = req.body;
         const filesArray = req.files;
         const sip = await SIP.findById(sipId);
-
+        
         for (let file of filesArray) {
             const fieldName = file.fieldname;
             if (fieldName === 'panCard') {
@@ -59,7 +59,7 @@ const uploadSipMedia = async (req, res) => {
                 sip.financialDetails.accountDetails.cancelledChequeURL = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
             }
         }
-
+        
         await sip.save();
         res.sendStatus(200);
     } catch (error) {
@@ -178,10 +178,39 @@ const fetchAllAssignedSips = async (req, res) => {
 
         res.status(200).json(assignedSips);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(503).json({ message: 'Network error. Try again' });
     }
 };
+// working
+const updateSip = async (req, res) => {
+    try {
+        const clientId = req.client._id;
+        const isCurrentClientEmployee = await Employee.findOne({ clientId: clientId });
+        if (!isCurrentClientEmployee) return res.status(400).json({ message: 'Unauthorised access' });
+
+        const { formData, selectedSipId } = req.body;
+        const { personalDetails, financialDetails } = formData;
+    
+        if (
+            !personalDetails?.firstName ||
+            !personalDetails?.contact?.email ||
+            !personalDetails?.contact?.phone
+        ) return res.status(400).json({ message: 'First Name, Email, and Phone are required.' });
+
+        const updatedSip = await SIP.findByIdAndUpdate(selectedSipId,
+            { $set: { personalDetails, financialDetails } },
+            { new: true }
+        );
+
+        if (!updatedSip) return res.status(404).json({ message: 'SIP not found!' });
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+}
 // working LATER: 'assignedBy' should be an ObjectId (but then import csv will be affected)
 const assignSip = async (req, res) => {
     try {
@@ -209,7 +238,7 @@ const assignSip = async (req, res) => {
         );
         res.sendStatus(200);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(503).json({ message: 'Network error. Try again' });
     }
 };
@@ -225,7 +254,7 @@ const uploadAssignSipMedia = async (req, res) => {
         await sip.save();
         res.sendStatus(200);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(503).json({ message: 'Network error. Try again' });
     }
 };
@@ -236,6 +265,7 @@ export {
     fetchSips,
     fetchAllUnassignedSips,
     fetchAllAssignedSips,
+    updateSip,
     assignSip,
     uploadAssignSipMedia,
 }

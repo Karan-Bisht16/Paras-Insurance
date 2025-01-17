@@ -7,7 +7,6 @@ import { ScrollArea } from "../../subcomponents/ScrollArea";
 
 const CombinedQuotationDetails = ({ selectedPolicy, details, onClose, reload }) => {
     const { combinedQuotationDetails, associatedPoCs } = details;
-    console.log(details);
     const [selectedCombinedQuotation, setSelectedCombinedQuotation] = useState([]);
     const transformQuotationData = (inputArray) => {
         if (inputArray[0].length === 0) {

@@ -567,7 +567,7 @@ const uploadUpdateClientPolicyMedia = async (req, res) => {
 
             const fileURL = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
 
-            const updatedPolicy = await ClientPolicy.findByIdAndUpdate(selectedPolicyId,
+            await ClientPolicy.findByIdAndUpdate(selectedPolicyId,
                 { $set: { [`data.${file.fieldname}`]: fileURL } },
                 { new: true }
             );

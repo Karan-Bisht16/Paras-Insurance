@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Button, CircularProgress, Tooltip } from '@mui/material';
 import { Edit, OpenInNew, SearchOutlined, SystemUpdateAlt, Visibility } from '@mui/icons-material';
 // importing api end-points
 import { exportClientPolicyCsv, sendCombinedQuotation, updateClientPolicy, uploadUpdateClientPolicyMedia } from '../../../api';
+// importing contexts
+import { SnackBarContext } from '../../../contexts/SnackBar.context';
 // importing components
 import EditPolicyModal from '../../subcomponents/EditPolicyModal';
 import PolicyDetailModal from '../../subcomponents/PolicyDetailModal';
@@ -10,6 +12,7 @@ import PolicyDetailModal from '../../subcomponents/PolicyDetailModal';
 import { toFormattedDate } from '../../../utils/helperFunctions';
 
 const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
+        const { setSnackbarState, setSnackbarValue } = useContext(SnackBarContext);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -90,6 +93,8 @@ const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
                 await uploadUpdateClientPolicyMedia({ ...files, selectedPolicyId: selectedPolicyId });
             }
             reload();
+            setSnackbarValue({message: 'Policy details updated successfully!', status: 'success'});
+            setSnackbarState(true);
             return false;
         } catch (error) {
             return error?.response?.data?.message;

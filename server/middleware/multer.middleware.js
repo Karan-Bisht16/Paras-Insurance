@@ -1,14 +1,7 @@
-import path from "path";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
-
-const getExtension = (file) => {
-    let ext = path.extname(file.originalname);
-    if (ext === "") {
-        ext = file.mimetype.replace("/", ".");
-    }
-    return ext;
-}
+// importing helper functions
+import { getExtension } from "../utils/helperFunctions.js";
 
 const storage = multer.diskStorage({
     destination: function (req, file, callback) {

@@ -164,11 +164,13 @@ const Dashboard = () => {
                         <UnassignedSipsTable
                             unassignedSips={unassignedSips}
                             onAssignSip={openAssignPolicyModal}
+                            reload={getAllUnassignedSips}
                         />
                     }{(tabIndex === 2) &&
                         <UnassignedSipsTable
                             unassignedSips={unassignedGeneralInsurances}
                             onAssignSip={openAssignPolicyModal}
+                            reload={getAllUnassignedGeneralInsurances}
                             isGeneralInsurance={true}
                         />
                     }

@@ -8,7 +8,7 @@ const SipDetailModal = ({ label, selectedSip, closeModal }) => {
         <div className='fixed !z-[1000] inset-0 bg-black/10 flex justify-center items-center' onClick={closeModal}>
             <div
                 onClick={(event) => event.stopPropagation()}
-                className='relative h-[75vh] overflow-y-scroll no-scrollbar bg-white w-[65vw] pb-6 rounded-xl shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'
+                className='relative h-[90vh] overflow-y-scroll no-scrollbar bg-white w-[65vw] pb-6 rounded-xl shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'
             >
                 <div className='px-6'>
                     <div className='flex justify-between items-center'>
@@ -67,7 +67,7 @@ const SipDetailModal = ({ label, selectedSip, closeModal }) => {
                             <TextField label="PAN Card Number" value={selectedSip?.financialDetails?.panCardNo} fullWidth slotProps={{ input: { readOnly: true } }} />
                         </div>
                         <div className='w-full'>
-                            {selectedSip?.financialDetails?.panCardURL &&
+                            {selectedSip?.financialDetails?.panCardURL ?
                                 <div className='flex w-full h-full'>
                                     <Link
                                         to={selectedSip?.financialDetails?.panCardURL}
@@ -80,13 +80,17 @@ const SipDetailModal = ({ label, selectedSip, closeModal }) => {
                                         </div>
                                     </Link>
                                 </div>
+                                :
+                                <div className='flex w-full h-full items-center justify-center bg-gray-400 rounded-md text-white'>
+                                    No PAN Card uploaded
+                                </div>
                             }
                         </div>
                         <div className='w-full'>
                             <TextField label="Aadhaar" value={selectedSip?.financialDetails?.aadhaarNo} fullWidth slotProps={{ input: { readOnly: true } }} />
                         </div>
                         <div className='w-full'>
-                            {selectedSip?.financialDetails?.aadhaarURL &&
+                            {selectedSip?.financialDetails?.aadhaarURL ?
                                 <div className='flex h-full w-full'>
                                     <Link
                                         to={selectedSip?.financialDetails?.aadhaarURL}
@@ -98,6 +102,10 @@ const SipDetailModal = ({ label, selectedSip, closeModal }) => {
                                             <OpenInNew className='!size-4' />
                                         </div>
                                     </Link>
+                                </div>
+                                :
+                                <div className='flex w-full h-full items-center justify-center bg-gray-400 rounded-md text-white'>
+                                    No Aadhaar uploaded
                                 </div>
                             }
                         </div>
@@ -114,7 +122,7 @@ const SipDetailModal = ({ label, selectedSip, closeModal }) => {
                         </div>
                     </div>
                     <div>
-                        {selectedSip?.financialDetails?.accountDetails?.cancelledChequeURL &&
+                        {selectedSip?.financialDetails?.accountDetails?.cancelledChequeURL ?
                             <div className='flex w-full h-12'>
                                 <Link
                                     to={selectedSip?.financialDetails?.accountDetails?.cancelledChequeURL}
@@ -126,6 +134,10 @@ const SipDetailModal = ({ label, selectedSip, closeModal }) => {
                                         <OpenInNew className='!size-4' />
                                     </div>
                                 </Link>
+                            </div>
+                            :
+                            <div className='flex w-full h-12 items-center justify-center bg-gray-400 rounded-md text-white'>
+                                No Cancelled Cheque uploaded
                             </div>
                         }
                     </div>

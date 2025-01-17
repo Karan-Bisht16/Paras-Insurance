@@ -1,4 +1,7 @@
+import fs from 'fs';
+import path from "path";
 import nodemailer from 'nodemailer';
+import { v4 as uuidv4 } from "uuid";
 // importing models
 import Employee from '../models/employee.model.js';
 
@@ -44,9 +47,32 @@ const generateAccessAndRefreshTokens = async (client) => {
 
         return { accessToken, refreshToken };
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return null;
     }
+}
+
+const getExtension = (file) => {
+    let ext = path.extname(file.originalname);
+    if (ext === "") {
+        ext = file.mimetype.replace("/", ".");
+    }
+    return ext;
+}
+
+const copyFileToSamePath = (oldPath, label) => {
+    const directory = path.dirname(oldPath);
+    const originalExtension = path.extname(oldPath);
+
+    const newFileName = `${label}-${uuidv4()}${originalExtension}`;
+    const newPath = path.join(directory, newFileName);
+
+    fs.copyFile(oldPath, newPath, (error) => {
+        if (error) {
+            console.error('Error copying the file:', error);
+        }
+    });
+    return newFileName;
 }
 
 export {
@@ -54,4 +80,6 @@ export {
     condenseClientInfo,
     transporter,
     generateAccessAndRefreshTokens,
+    getExtension,
+    copyFileToSamePath,
 }

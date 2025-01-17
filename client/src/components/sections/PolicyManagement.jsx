@@ -82,7 +82,7 @@ const PolicyManagement = () => {
         67828d3c55fde81a1702d8a1,6777932ef2013d3cfcc27347,677ad0e3198ff6af3c393c86,Interested,,2025-01-11T15:24:44.239Z,2025-01-11T15:27:43.082Z,,,,,Gautum,Gulati,tvpgits@gmail.com,9971280816,Client,true,,,,,,110063,,,,Yes,,,,,,,,,,,,,,,,,,
         6782916d50c47627311ae372,6749f62acc685fd8ec7c2260,677ad0e3198ff6af3c393c86,Assigned,policyDocument-4261804a-1358-48de-984b-8ecccc679d62.jpg,2025-01-11T15:42:37.201Z,2025-01-11T17:18:35.220Z,Kiran Bisht,2025-01-25,,,Gautum,Gulati,tvpgits@gmail.com,9971280816,Client,true,1999-01-01,Male,Term Plan,House No 299,New Delhi,Delhi,110063,India,,,,,,,,,,,,,,,,,,
         67843a81cc232732a91d8f94,6749f86bcc685fd8ec7c2264,677ad0e3198ff6af3c393c86,Interested,,2025-01-12T21:56:17.031Z,2025-01-12T21:56:17.031Z,,,,,Gautum,Gulati,tvpgits@gmail.com,9971280816,Client,true,,,,,,New Delhi,Delhi,,,,Drink,,Me,,58,100,john,,Male,89,Father,[Smoke Drink Tobacco],4564,2`;
-        
+
         const blob = new Blob([sampleData], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -154,10 +154,12 @@ const PolicyManagement = () => {
                     } {(tabIndex === 1) &&
                         <AssignedSipsTable
                             assignedSips={assignedSips}
+                            reload={getAllAssignedSips}
                         />
                     }{(tabIndex === 2) &&
                         <AssignedSipsTable
                             assignedSips={assignedGeneralInsurances}
+                            reload={getAllAssignedGeneralInsurances}
                             isGeneralInsurance={true}
                         />
                     }

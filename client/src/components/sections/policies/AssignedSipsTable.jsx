@@ -1,12 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Tooltip } from '@mui/material';
-import { OpenInNew, SearchOutlined, Visibility } from '@mui/icons-material';
+import { Edit, OpenInNew, SearchOutlined, Visibility } from '@mui/icons-material';
+// importing contexts
+import { SnackBarContext } from '../../../contexts/SnackBar.context';
 // importing components
 import SipDetailModal from '../../subcomponents/SipDetailModal';
 // importing helper functions
 import { toFormattedDate } from '../../../utils/helperFunctions';
+import UpdateProfileForm from '../../UpdateProfileForm';
+import { updateGeneralInsurance, updateSip, uploadGeneralInsuranceMedia, uploadSipMedia } from '../../../api';
 
-const AssignedSipsTable = ({ assignedSips, isGeneralInsurance }) => {
+const AssignedSipsTable = ({ assignedSips, isGeneralInsurance, reload }) => {
+    const { setSnackbarState, setSnackbarValue } = useContext(SnackBarContext);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -42,6 +47,42 @@ const AssignedSipsTable = ({ assignedSips, isGeneralInsurance }) => {
         setSelectedSip(sipData);
         setIsSipSelected(true);
     };
+
+    const [isSipSelectedForEdit, setIsSipSelectedForEdit] = useState(false);
+    const [selectedSipForEdit, setSelectedSipForEdit] = useState({});
+    const [selectedSipId, setSelectedSipId] = useState('');
+
+    const [selectedGeneralInsurancePolicyTypeForEdit, setSelectedGeneralInsurancePolicyTypeForEdit] = useState('');
+    const handleOpenSipForEdit = (sipData) => {
+        if (isGeneralInsurance) setSelectedGeneralInsurancePolicyTypeForEdit(sipData.policyType);
+        setSelectedSipId(sipData._id);
+        setSelectedSipForEdit({ personalDetails: sipData.personalDetails, financialDetails: sipData.financialDetails });
+        setIsSipSelectedForEdit(true);
+    };
+
+    const handleCloseSipForEdit = () => {
+        setSelectedSipId('');
+        setSelectedSipForEdit({});
+        setIsSipSelectedForEdit(false);
+    };
+
+    const handleEditSipSubmit = async (formData, removedFiles, files, policyType) => {
+        try {
+            if (!isGeneralInsurance) {
+                await updateSip({ formData, removedFiles, selectedSipId });
+                await uploadSipMedia({ ...files, sipId: selectedSipId });
+            } else {
+                await updateGeneralInsurance({ formData, removedFiles, selectedGeneralInsuranceId: selectedSipId, policyType });
+                await uploadGeneralInsuranceMedia({ ...files, generalInsuranceId: selectedSipId });
+            }
+            setSnackbarValue({ message: 'SIP details updated successfully!', status: 'success' });
+            setSnackbarState(true);
+            reload();
+            return false;
+        } catch (error) {
+            return error?.response?.data?.message;
+        }
+    }
 
     return (
         <div className="space-y-4">
@@ -85,7 +126,7 @@ const AssignedSipsTable = ({ assignedSips, isGeneralInsurance }) => {
                                 </th>
                             }
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Details
+                                Actions
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Assigned By
@@ -124,9 +165,14 @@ const AssignedSipsTable = ({ assignedSips, isGeneralInsurance }) => {
                                     </td>
                                 }
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                    <button className="text-blue-600 hover:text-blue-900">
+                                    <button className="text-gray-600 hover:text-blue-900 mr-2">
                                         <Tooltip title='View SIP details'>
                                             <Visibility onClick={() => handleSelectSip(sip)} />
+                                        </Tooltip>
+                                    </button>
+                                    <button className="p-1 border border-gray-300 rounded-md shadow-sm text-blue-600 hover:text-blue-900 ml-1 focus:outline-none">
+                                        <Tooltip title='View policy details'>
+                                            <Edit onClick={() => handleOpenSipForEdit(sip)} />
                                         </Tooltip>
                                     </button>
                                 </td>
@@ -165,6 +211,17 @@ const AssignedSipsTable = ({ assignedSips, isGeneralInsurance }) => {
                         label={isGeneralInsurance ? `General Insurance (${selectedSip?.policyType})` : 'SIP'}
                         selectedSip={selectedSip}
                         closeModal={() => setIsSipSelected(false)}
+                    />
+                }
+                {isSipSelectedForEdit &&
+                    <UpdateProfileForm
+                        clientData={selectedSipForEdit}
+                        closeUpdateProfile={handleCloseSipForEdit}
+                        onSubmit={handleEditSipSubmit}
+                        includePolicyType={isGeneralInsurance}
+                        initialPolicyType={isGeneralInsurance ? selectedGeneralInsurancePolicyTypeForEdit : ''}
+                        label={isGeneralInsurance ? `Update General Insurance (${selectedSip?.policyType})` : 'Update SIP'}
+                        excludeEmployementDetails={true}
                     />
                 }
             </div>

@@ -5,7 +5,7 @@ import { Close, Delete, ExpandMore, OpenInNew, Upload } from '@mui/icons-materia
 // importing api end-points
 import { fetchEveryPolicyId } from '../api';
 
-const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSubmit, label, includePolicyType, excludeEmployementDetails }) => {
+const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSubmit, label, includePolicyType, initialPolicyType, excludeEmployementDetails }) => {
     const [error, setError] = useState('');
 
     const [formData, setFormData] = useState(clientData);
@@ -32,6 +32,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
             }));
         }
     };
+    const [initialCurrentPolicyForEdit, setInitialCurrentPolicyForEdit] = useState(initialPolicyType || '');
     const [currentPolicyId, setCurrentPolicyId] = useState('');
     const handlePolicyChange = (event) => {
         setCurrentPolicyId(event.target?.value)
@@ -39,10 +40,13 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
     const [everyPolicyId, setEveryPolicyId] = useState([]);
     const getEveryPolicyIds = async () => {
         const { data } = await fetchEveryPolicyId();
+        setEveryPolicyId(data);
         if (currentPolicyId === '') {
             setCurrentPolicyId(data[0]._id);
         }
-        setEveryPolicyId(data);
+        if (initialCurrentPolicyForEdit?.trim() !== '') {
+            setCurrentPolicyId(data.filter((policy) => policy.policyName === initialCurrentPolicyForEdit)[0]?._id);
+        }
     }
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -138,7 +142,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
         setError('');
         let errorMessage = '';
         if (includePolicyType) {
-            errorMessage = await onSubmit(formData, removedFiles, files, everyPolicyId.filter(policy => policy._id === currentPolicyId)[0].policyName);
+            errorMessage = await onSubmit(formData, removedFiles, files, everyPolicyId.filter(policy => policy._id === currentPolicyId)[0]?.policyName);
         } else {
             errorMessage = await onSubmit(formData, removedFiles, files);
         }
@@ -463,15 +467,26 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                         <div className='w-full h-14 mt-5'>
                             {(activeStep === 0) &&
                                 <div className='float-right'>
-                                    <Button variant="contained" color="primary" size="large" onClick={handleNext}>Next</Button>
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleNext}
+                                        className='!bg-gray-900'
+                                    >Next</Button>
                                 </div>
                             } {(activeStep === 1) &&
                                 <>
                                     <div className='float-left'>
-                                        <Button variant="outlined" size="large" onClick={handleBack}>Back</Button>
+                                        <Button
+                                            variant="outlined"
+                                            onClick={handleBack}
+                                            className='!text-gray-900'
+                                        >Back</Button>
                                     </div>
                                     <div className='float-right'>
-                                        <Button variant="contained" color="primary" size="large" type='submit'>{label}</Button>
+                                        <Button
+                                            variant="contained" type='submit'
+                                            className='!bg-gray-900'
+                                        >{label}</Button>
                                     </div>
                                 </>
                             }
@@ -483,7 +498,14 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                     <Stepper activeStep={activeStep} alternativeLabel>
                         {steps.map((label, index) => {
                             return (
-                                <Step key={index}>
+                                <Step
+                                    key={index}
+                                    sx={{
+                                        '& .MuiStepLabel-root .Mui-completed': { color: '#111827' },
+                                        '& .MuiStepLabel-root .Mui-active': { color: '#111827' },
+                                        '& .MuiStepLabel-root .Mui-active .MuiStepIcon-text': { fill: 'white' },
+                                    }}
+                                >
                                     <StepLabel>{label}</StepLabel>
                                 </Step>
                             );
