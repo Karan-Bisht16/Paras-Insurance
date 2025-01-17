@@ -847,7 +847,7 @@ const sendRequestCallback = async (name, phone, message, source) => {
 const requestCallbackViaWhatsApp = async (req, res) => {
     try {
         const { clientId, name, phone, message } = req.body;
-        console.log(req.body);
+
         if (clientId) {
             const updatedClient = await Client.findByIdAndUpdate(clientId, {
                 $push: {
@@ -864,29 +864,65 @@ const requestCallbackViaWhatsApp = async (req, res) => {
                 message,
                 'WhatsApp'
             );
-            return res.status(200).json({ message: 'Callback requested' });
+            return res.status(200).json({ message: 'Callback requested successfully!', count: 1, multiple: false, clientId: updatedClient._id });
         } else if (name && phone) {
-            const newClient = await Client.create({
-                userType: 'Lead',
-                password: `${name}@${phone}`,
-                personalDetails: {
-                    firstName: name,
-                    lastName: '',
-                    contact: {
-                        email: '',
-                        phone: phone
+            const clients = await Client.find({ 'personalDetails.contact.phone': phone }).select("_id");
+            if (clients.length === 0) {
+                const newClient = await Client.create({
+                    userType: 'Lead',
+                    password: `${name}@${phone}`,
+                    personalDetails: {
+                        firstName: name,
+                        lastName: '',
+                        contact: {
+                            email: '',
+                            phone: phone
+                        },
                     },
-                },
-                notes: {
-                    message: message || '',
-                    requestCallback: true,
-                    source: 'WhatsApp'
-                },
-            });
-            await newClient.addInteraction('Callback Requested', 'Client has requested a callback.');
-
-            await sendRequestCallback(name, phone, message, 'WhatsApp');
-            return res.status(200).json({ message: 'Password is [WA_DISPLAY_NAME]@[PHONE_NUMBER]' });
+                    notes: {
+                        message: message || '',
+                        requestCallback: true,
+                        source: 'WhatsApp'
+                    },
+                });
+                await newClient.addInteraction('Callback Requested', 'Client has requested a callback.');
+                await sendRequestCallback(name, phone, message, 'WhatsApp');
+                return res.status(200).json({
+                    message: 'New account created!. Password is [WA_DISPLAY_NAME]@[PHONE_NUMBER]. Callback requested successfully!',
+                    count: 1,
+                    multiple: false,
+                    clientId: newClient._id
+                });
+            } else if (clients.length === 1) {
+                const updatedClient = await Client.findByIdAndUpdate(clients[0]._id, {
+                    $push: {
+                        notes: { message: message || '', requestCallback: true, source: 'WhatsApp' },
+                        interactionHistory: {
+                            type: 'Callback Requested',
+                            description: 'Client has requested a callback.',
+                        },
+                    }
+                }, { new: true });
+                await sendRequestCallback(
+                    `${updatedClient?.personalDetails?.firstName}${updatedClient?.personalDetails?.lastName}`,
+                    updatedClient?.personalDetails?.contact?.phone,
+                    message,
+                    'WhatsApp'
+                );
+                return res.status(200).json({
+                    message: 'Client found. Callback requested successfully!',
+                    count: 1,
+                    multiple: false,
+                    clientId: updatedClient._id
+                });
+            } else {
+                return res.status(200).json({
+                    message: 'Multiple clients found',
+                    count: clients?.length,
+                    multiple: true,
+                    clients: clients
+                });
+            }
         } else return res.status(400).json({ message: 'Invalid data' });
 
     } catch (error) {
