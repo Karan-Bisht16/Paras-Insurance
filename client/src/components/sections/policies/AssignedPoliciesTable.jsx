@@ -12,7 +12,7 @@ import PolicyDetailModal from '../../subcomponents/PolicyDetailModal';
 import { toFormattedDate } from '../../../utils/helperFunctions';
 
 const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
-        const { setSnackbarState, setSnackbarValue } = useContext(SnackBarContext);
+    const { setSnackbarState, setSnackbarValue } = useContext(SnackBarContext);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -93,7 +93,7 @@ const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
                 await uploadUpdateClientPolicyMedia({ ...files, selectedPolicyId: selectedPolicyId });
             }
             reload();
-            setSnackbarValue({message: 'Policy details updated successfully!', status: 'success'});
+            setSnackbarValue({ message: 'Policy details updated successfully!', status: 'success' });
             setSnackbarState(true);
             return false;
         } catch (error) {
@@ -184,16 +184,18 @@ const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
                                     <div className="text-sm text-gray-500">{toFormattedDate(policy.createdAt)}</div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                    <button className="text-gray-600 hover:text-blue-900 mr-2">
+                                    <button className={`text-gray-600 hover:text-blue-900 ${policy.policyId !== '6777932ef2013d3cfcc27347' && 'mr-2'}`}>
                                         <Tooltip title='View policy details'>
                                             <Visibility onClick={() => handleSelectPolicy(policy)} />
                                         </Tooltip>
                                     </button>
-                                    <button className="p-1 border border-gray-300 rounded-md shadow-sm text-blue-600 hover:text-blue-900 ml-1 focus:outline-none">
-                                        <Tooltip title='View policy details'>
-                                            <Edit onClick={() => handleOpenPolicyForEdit(policy)} />
-                                        </Tooltip>
-                                    </button>
+                                    {policy.policyId !== '6777932ef2013d3cfcc27347' &&
+                                        <button className="p-1 border border-gray-300 rounded-md shadow-sm text-blue-600 hover:text-blue-900 ml-1 focus:outline-none">
+                                            <Tooltip title='View policy details'>
+                                                <Edit onClick={() => handleOpenPolicyForEdit(policy)} />
+                                            </Tooltip>
+                                        </button>
+                                    }
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm text-gray-500">{policy.assignedBy}</div>

@@ -39,14 +39,16 @@ const CompanyForm = () => {
 
     const [submitting, setSubmitting] = useState(false);
     const handleAddQuotation = async (quotationData) => {
-        setSubmitting(true);
+        if (submitting) return;
+
+        await setSubmitting(true);
         try {
             await createQuotation({ clientPolicyId, clientId, companyId, quotationData });
             navigate('/', { state: { status: 'success', message: 'Quotation data recieved!', time: new Date().getTime() } })
         } catch (error) {
             console.error(error);
         }
-        setSubmitting(false);
+        await setSubmitting(false);
     }
 
     tailChase.register();

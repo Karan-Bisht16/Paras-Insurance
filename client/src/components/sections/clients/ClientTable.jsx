@@ -211,7 +211,7 @@ const ClientTable = ({ clients, reload }) => {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                                     <a href={`/policies/${client?._id}`} target='_blank' className="flex justify-center text-sm font-medium text-gray-900 cursor-pointer hover:underline">
-                                        <Tooltip title='View profile'>
+                                        <Tooltip title='View policies'>
                                             <OpenInNew className='!size-4' />
                                         </Tooltip>
                                     </a>

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Button, CircularProgress } from '@mui/material';
+import { Button, CircularProgress, TextField } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
 import { tailChase } from 'ldrs';
 // importing api end-points
@@ -203,10 +203,10 @@ const InsuranceForm = () => {
                 const result = await createClientPolicy({
                     formData: {
                         ...formData,
-                        firstName: condenseClientInfo?.firstName,
-                        lastName: condenseClientInfo?.lastName || '',
-                        email: condenseClientInfo?.email,
-                        phone: condenseClientInfo?.phone,
+                        firstName: data?.firstName,
+                        lastName: data?.lastName || '',
+                        email: data?.email,
+                        phone: data?.phone,
                     },
                     policyId: currentPolicyId,
                     clientId: data._id
@@ -226,10 +226,10 @@ const InsuranceForm = () => {
                 const result = await createClientPolicy({
                     formData: {
                         ...formData,
-                        firstName: condenseClientInfo?.firstName,
-                        lastName: condenseClientInfo?.lastName || '',
-                        email: condenseClientInfo?.email,
-                        phone: condenseClientInfo?.phone,
+                        firstName: data?.firstName,
+                        lastName: data?.lastName || '',
+                        email: data?.email,
+                        phone: data?.phone,
                     },
                     policyId: currentPolicyId,
                     clientId: data._id
@@ -281,43 +281,27 @@ const InsuranceForm = () => {
                         <form id='insuranceForm' onSubmit={handleFormSubmit} className='bg-white shadow-md rounded-lg pt-6 pb-8 px-8 transition duration-300 ease-in-out hover:shadow-xl'>
                             <h1 className='text-2xl font-bold text-center mb-4'>{formFields.sections[currentSection].heading}</h1>
                             {!isLoggedIn && currentSection === 0 &&
-                                <div>
-                                    <div>
-                                        <label htmlFor='firstName' className='block text-sm font-medium text-gray-700 mb-1'>
-                                            First Name<span className='text-red-600'>*</span>
-                                        </label>
-                                        <input
-                                            type='text' id='firstName' name='firstName' value={defaultFormData.firstName} onChange={handleDefaultFormDataChange} placeholder='Enter your first name' required={true}
-                                            className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                                        />
-                                    </div>
-                                    <div>
-                                        <label htmlFor='lastName' className='block text-sm font-medium text-gray-700 mb-1'>
-                                            Last Name
-                                        </label>
-                                        <input
-                                            type='text' id='lastName' name='lastName' value={defaultFormData.lastName} onChange={handleDefaultFormDataChange} placeholder='Enter your last name'
-                                            className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                                        />
-                                    </div>
-                                    <div>
-                                        <label htmlFor='email' className='block text-sm font-medium text-gray-700 mb-1'>
-                                            Email<span className='text-red-600'>*</span>
-                                        </label>
-                                        <input
-                                            type='email' id='email' name='email' value={defaultFormData.email} onChange={handleDefaultFormDataChange} placeholder='Enter your email' required={true}
-                                            className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                                        />
-                                    </div>
-                                    <div>
-                                        <label htmlFor='phone' className='block text-sm font-medium text-gray-700 mb-1'>
-                                            Phone<span className='text-red-600'>*</span>
-                                        </label>
-                                        <input
-                                            type='tel' id='phone' name='phone' value={defaultFormData.phone} onChange={handleDefaultFormDataChange} placeholder='Enter your phone number' required={true} pattern='[0-9]{10}'
-                                            className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                                        />
-                                    </div>
+                                <div className='space-y-2 mb-2'>
+                                    <TextField
+                                        label='First Name' type='text' id='firstName' name='firstName' value={defaultFormData.firstName} onChange={handleDefaultFormDataChange} placeholder='Enter your first name' required={true}
+                                        InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
+                                        fullWidth
+                                    />
+                                    <TextField
+                                        label='Last Name' type='text' id='lastName' name='lastName' value={defaultFormData.lastName} onChange={handleDefaultFormDataChange} placeholder='Enter your last name'
+                                        InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
+                                        fullWidth
+                                    />
+                                    <TextField
+                                        label='Email' type='email' id='email' name='email' value={defaultFormData.email} onChange={handleDefaultFormDataChange} placeholder='Enter your email' required={true}
+                                        InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
+                                        fullWidth
+                                    />
+                                    <TextField
+                                        label='Phone' type='tel' id='phone' name='phone' value={defaultFormData.phone} onChange={handleDefaultFormDataChange} placeholder='Enter your phone number' required={true} pattern='[0-9]{10}'
+                                        InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
+                                        fullWidth
+                                    />
                                 </div>
                             }
                             <FormSection

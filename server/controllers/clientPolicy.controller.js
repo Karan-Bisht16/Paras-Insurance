@@ -668,11 +668,105 @@ const exportCsv = async (req, res) => {
     try {
         const clientPolicies = await ClientPolicy.find().lean();
 
+        const predefinedDynamicOrder = [
+            'data.firstName',
+            'data.lastName',
+            'data.email',
+            'data.phone',
+            'data.heightLife',
+            'data.weightLife',
+            'data.motherNameLife',
+            'data.qualificationsLife',
+            'data.natureOfWorkLife',
+            'data.annualIncomeLife',
+            'data.nameOfCompanyLife',
+            'data.industryOfBusinessLife',
+            'data.typeOfCompanyLife',
+            'data.habitsLife',
+            'data.nomineeNameLife',
+            'data.nomineeDoBLife',
+            'data.nomineeRelationLife',
+            'data.panCardLife',
+            'data.aadhaarCardLife',
+            'data.livePhotoLife',
+            'data.cancelledChequeLife',
+            'data.itrWithCoiLife',
+            'data.dobHealth',
+            'data.heightHealth',
+            'data.weightHealth',
+            'data.educationHealth',
+            'data.occupationHealth',
+            'data.annualIncomeHealth',
+            'data.substanceUseHealth',
+            'data.streetHealth',
+            'data.cityHealth',
+            'data.stateHealth',
+            'data.countryHealth',
+            'data.pincodeHealth',
+            'data.nomineeNameHealth',
+            'data.nomineeDoBHealth',
+            'data.nomineeRelationHealth',
+            'data.panCardHealth',
+            'data.aadhaarCardHealth',
+            'data.cancelledChequeHealth',
+            'data.membersHealth',
+            'data.1memberFirstNameHealth',
+            'data.1memberLastNameHealth',
+            'data.1memberDobHealth',
+            'data.1memberHeightHealth',
+            'data.1memberWeightHealth',
+            'data.1memberPhoneHealth',
+            'data.1memberRelationHealth',
+            'data.1memberSubstanceUseHealth',
+            'data.2memberFirstNameHealth',
+            'data.2memberLastNameHealth',
+            'data.2memberDobHealth',
+            'data.2memberHeightHealth',
+            'data.2memberWeightHealth',
+            'data.2memberPhoneHealth',
+            'data.2memberRelationHealth',
+            'data.2memberSubstanceUseHealth',
+            'data.3memberFirstNameHealth',
+            'data.3memberLastNameHealth',
+            'data.3memberDobHealth',
+            'data.3memberHeightHealth',
+            'data.3memberWeightHealth',
+            'data.3memberPhoneHealth',
+            'data.3memberRelationHealth',
+            'data.3memberSubstanceUseHealth',
+            'data.passportNoTravel',
+            'data.passportTravelTravel',
+            'data.ticketsTravel',
+            'data.diseaseTravel',
+            'data.membersTravel',
+            'data.1memberNameTravel',
+            'data.1memberDOBTravel',
+            'data.1memberRelationTravel',
+            'data.1memberDiseaseTravel',
+            'data.2memberNameTravel',
+            'data.2memberDOBTravel',
+            'data.2memberRelationTravel',
+            'data.2memberDiseaseTravel',
+            'data.3memberNameTravel',
+            'data.3memberDOBTravel',
+            'data.3memberRelationTravel',
+            'data.3memberDiseaseTravel',
+            'data.existingPolicyVehicle',
+            'data.claimPreviousYearVehicle',
+            'data.rcVehicle',
+        ];
+
         const dynamicFields = new Set();
         clientPolicies.forEach(policy => {
             if (policy.data) {
                 Object.keys(policy.data).forEach(key => dynamicFields.add(`data.${key}`));
             }
+        });
+
+        const sortedDynamicFields = Array.from(dynamicFields).sort((a, b) => {
+            const indexA = predefinedDynamicOrder.indexOf(a);
+            const indexB = predefinedDynamicOrder.indexOf(b);
+            return indexA - indexB;
         });
 
         const staticFields = [
@@ -689,7 +783,7 @@ const exportCsv = async (req, res) => {
             'origin',
         ];
 
-        const fields = [...staticFields, ...dynamicFields];
+        const fields = [...staticFields, ...sortedDynamicFields];
 
         const json2csvParser = new Parser({ fields });
         const csv = json2csvParser.parse(clientPolicies);
@@ -702,7 +796,7 @@ const exportCsv = async (req, res) => {
         res.status(503).json({ message: 'Network error. Try again' });
     }
 };
-// working TODO: update with new dynamic form
+// working
 const importCsv = async (req, res) => {
     try {
         const csvData = await csv().fromFile(req.file.path);
@@ -717,7 +811,20 @@ const importCsv = async (req, res) => {
                 policyDocumentURL,
                 assignedBy,
                 origin,
+                policyNo,
+                createdAt,
+                updatedAt,
+                ...restData
             } = row;
+
+            const data = Object.keys(restData)
+                .filter((key) => key.startsWith('data'))
+                .reduce((acc, key) => {
+                    if (restData[key] !== '') {
+                        acc['data'] = restData[key];
+                    }
+                    return acc;
+                }, {})?.data;
 
             try {
                 const policy = await Policy.findOne({ _id: policyId.trim() });
@@ -733,43 +840,17 @@ const importCsv = async (req, res) => {
                 }
 
                 const policyData = {
-                    policyId: row.policyId,
-                    clientId: row.clientId,
-                    data: {
-                        firstName: row.data['firstName'] || '',
-                        lastName: row.data['lastName'] || '',
-                        email: row.data['email'] || '',
-                        phone: row.data['phone'] || '',
-                        pincode: row.data['pincode'] || '',
-                        disease: row.data['disease'] || 'No',
-                        '1nomineeName': row.data['1nomineeName'] || '',
-                        '1nomineeDOB': row.data['1nomineeDOB'] || '',
-                        '1nomineeRelation': row.data['1nomineeRelation'] || '',
-                        gender: row.data['gender'] || '',
-                        age: row.data['age'] || '',
-                        sumInsured: row.data['sumInsured'] || '',
-                        substanceUse: row.data['substanceUse'] || '',
-                        '1memberFirstName': row.data['1memberFirstName'] || '',
-                        '1memberLastName': row.data['1memberLastName'] || '',
-                        '1memberGender': row.data['1memberGender'] || '',
-                        '1memberAge': row.data['1memberAge'] || '',
-                        '1memberRelation': row.data['1memberRelation'] || '',
-                        passportNo: row.data['passportNo'] || '',
-                        tickets: row.data['tickets'] || '',
-                        '1nomineeDisease': row.data['1nomineeDisease'] || '',
-                        dob: row.data['dob'] || '',
-                        insurancePlan: row.data['insurancePlan'] || '',
-                        street: row.data['street'] || '',
-                        city: row.data['city'] || '',
-                        state: row.data['state'] || '',
-                        PINCODE: row.data['PINCODE'] || '',
-                        country: row.data['country'] || '',
-                        '1memberSubstanceUse': row.data['1memberSubstanceUse'] || '',
-                    },
+                    policyId: policyId.trim(),
+                    clientId: clientId.trim(),
+                    data,
                     stage: stage || '',
                     expiryDate: expiryDate || null,
                     policyDocumentURL: policyDocumentURL || '',
+                    policyNo: policyNo || '',
                     assignedBy: assignedBy || '',
+                    origin: origin || '',
+                    createdAt,
+                    updatedAt,
                 };
 
                 if (_id && _id.trim()) {
@@ -782,46 +863,7 @@ const importCsv = async (req, res) => {
                 } else {
                     console.log(`Creating new ClientPolicy entry for policyId: ${policyId}, clientId: ${clientId}`);
 
-                    return await ClientPolicy.create({
-                        policyId: row.policyId,
-                        clientId: row.clientId,
-                        data: {
-                            firstName: row.data['firstName'] || '',
-                            lastName: row.data['lastName'] || '',
-                            email: row.data['email'] || '',
-                            phone: row.data['phone'] || '',
-                            pincode: row.data['pincode'] || '',
-                            disease: row.data['disease'] || 'No',
-                            '1nomineeName': row.data['1nomineeName'] || '',
-                            '1nomineeDOB': row.data['1nomineeDOB'] || '',
-                            '1nomineeRelation': row.data['1nomineeRelation'] || '',
-                            gender: row.data['gender'] || '',
-                            age: row.data['age'] || '',
-                            sumInsured: row.data['sumInsured'] || '',
-                            substanceUse: row.data['substanceUse'] || '',
-                            '1memberFirstName': row.data['1memberFirstName'] || '',
-                            '1memberLastName': row.data['1memberLastName'] || '',
-                            '1memberGender': row.data['1memberGender'] || '',
-                            '1memberAge': row.data['1memberAge'] || '',
-                            '1memberRelation': row.data['1memberRelation'] || '',
-                            passportNo: row.data['passportNo'] || '',
-                            tickets: row.data['tickets'] || '',
-                            '1nomineeDisease': row.data['1nomineeDisease'] || '',
-                            dob: row.data['dob'] || '',
-                            insurancePlan: row.data['insurancePlan'] || '',
-                            street: row.data['street'] || '',
-                            city: row.data['city'] || '',
-                            state: row.data['state'] || '',
-                            PINCODE: row.data['PINCODE'] || '',
-                            country: row.data['country'] || '',
-                            '1memberSubstanceUse': row.data['1memberSubstanceUse'] || '',
-                        },
-                        stage: stage || '',
-                        expiryDate: expiryDate || null,
-                        policyDocumentURL: policyDocumentURL || '',
-                        assignedBy: assignedBy || '',
-                        origin: origin || '',
-                    });
+                    return await ClientPolicy.create(policyData);
                 }
             } catch (error) {
                 if (error.name === 'ValidationError') {
@@ -829,6 +871,7 @@ const importCsv = async (req, res) => {
                     console.error(`Validation failed for row: ${JSON.stringify(row)}`);
                     console.error(`Missing or invalid fields: ${missingFields.join(', ')}`);
                 } else {
+                    console.error(`Error processing row: ${JSON.stringify(row)}`);
                     throw err;
                 }
             }
