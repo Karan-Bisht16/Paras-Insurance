@@ -253,8 +253,8 @@ const createClientPolicy = async (req, res) => {
         await newClientPolicy.save();
 
         if (result.length > 0) {
-            sendQuotationMail({ to: result, clientPolicyId: newClientPolicy._id, clientId, policyId, policyType });
             sendQuotationWA({ to: result, clientPolicyId: newClientPolicy._id, clientId, policyId, policyType });
+            sendQuotationMail({ to: result, clientPolicyId: newClientPolicy._id, clientId, policyId, policyType });
         }
 
         if (policy) {
