@@ -340,7 +340,7 @@ const fetchClientPolicy = async (req, res) => {
         const { clientPolicyId } = req.query;
 
         const clientPolicy = await ClientPolicy.aggregate([
-            { $match: { clientId: new ObjectId(clientPolicyId) } },
+            { $match: { _id: new ObjectId(clientPolicyId) } },
             {
                 $lookup: {
                     from: 'policies',
