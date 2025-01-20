@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { tailChase } from 'ldrs';
 // importing api end-points
-import { createQuotation, fetchClientPolicy } from "../api";
+import { createQuotation, fetchClientPolicyForCompany } from "../api";
 // importing components
 import QuotationForm from "../components/subcomponents/QuotationForm";
 import PolicyDetailModal from "../components/subcomponents/PolicyDetailModal";
@@ -18,7 +18,7 @@ const CompanyForm = () => {
 
     const getClientPolicyData = async () => {
         try {
-            const { data } = await fetchClientPolicy({ clientPolicyId, companyId });
+            const { data } = await fetchClientPolicyForCompany({ clientPolicyId, companyId });
             setClientPolicyData(data);
             setIsLoadingClientPolicyData(false);
         } catch (error) {

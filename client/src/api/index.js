@@ -56,6 +56,7 @@ export const uploadExisitingClientPolicyMedia = (media) => API.post('/clientPoli
     }
 });
 export const fetchClientPolicy = (clientPolicyId) => API.get('/clientPolicy/fetchClientPolicy', { params: clientPolicyId });
+export const fetchClientPolicyForCompany = (clientPolicyId) => API.get('/clientPolicy/fetchClientPolicyForCompany', { params: clientPolicyId });
 export const fetchAllUnassignedPolicies = () => API.get('/clientPolicy/fetchAllUnassigned');
 export const fetchAllAssignedPolicies = () => API.get('/clientPolicy/fetchAllAssigned');
 export const countAllAssignedPolicies = () => API.get('/clientPolicy/countAllAssigned');

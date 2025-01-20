@@ -337,6 +337,68 @@ const uploadExisitingClientPolicyMedia = async (req, res) => {
 // working
 const fetchClientPolicy = async (req, res) => {
     try {
+        const { clientPolicyId } = req.query;
+
+        const clientPolicy = await ClientPolicy.aggregate([
+            { $match: { clientId: new ObjectId(clientPolicyId) } },
+            {
+                $lookup: {
+                    from: 'policies',
+                    localField: 'policyId',
+                    foreignField: '_id',
+                    as: 'policyData'
+                }
+            },
+            { $unwind: '$policyData' },
+            {
+                $lookup: {
+                    from: 'combinedquotations',
+                    localField: 'quotation',
+                    foreignField: '_id',
+                    as: 'quotationData'
+                }
+            },
+            { $unwind: { path: '$quotationData', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    _id: 1,
+                    clientId: 1,
+                    policyId: 1,
+                    data: 1,
+                    stage: 1,
+                    policyNo: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    expiryDate: 1,
+                    policyDocumentURL: 1,
+                    policyDetails: {
+                        policyName: '$policyData.policyName',
+                        policyType: '$policyData.policyType',
+                        policyDescription: '$policyData.policyDescription',
+                        policyIcon: '$policyData.policyIcon',
+                        policyForm: '$policyData.form',
+                    },
+                    combinedQuotationDetails: {
+                        quotationData: '$quotationData.quotationData',
+                        status: '$quotationData.status',
+                        countTotalEmails: '$quotationData.countTotalEmails',
+                        countRecievedQuotations: '$quotationData.countRecievedQuotations',
+                        sentBy: '$quotationData.sentBy',
+                        createdAt: '$quotationData.createdAt',
+                        updatedAt: '$quotationData.updatedAt',
+                    }
+                }
+            }
+        ]);
+        res.status(200).json(clientPolicy[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+};
+// working
+const fetchClientPolicyForCompany = async (req, res) => {
+    try {
         const { clientPolicyId, companyId } = req.query;
         const company = await Company.findById(companyId);
 
@@ -891,6 +953,7 @@ export {
     uploadExisitingClientPolicy,
     uploadExisitingClientPolicyMedia,
     fetchClientPolicy,
+    fetchClientPolicyForCompany,
     fetchAllUnassignedPolicies,
     fetchAllAssignedPolicies,
     countAllAssignedPolicies,

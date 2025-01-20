@@ -1,7 +1,7 @@
 import express from 'express';
 import auth from '../middleware/auth.middleware.js';
 import upload from '../middleware/multer.middleware.js';
-import { createClientPolicy, fetchAllUnassignedPolicies, fetchAllAssignedPolicies, countAllAssignedPolicies, fetchClientPolicy, assignClientPolicy, uploadAssignClientPolicyMedia, sendCombinedQuotation, exportCsv, importCsv, uploadExisitingClientPolicy, uploadExisitingClientPolicyMedia, uploadClientPolicyMedia, updateClientPolicy, uploadUpdateClientPolicyMedia } from '../controllers/clientPolicy.controller.js';
+import { createClientPolicy, fetchAllUnassignedPolicies, fetchAllAssignedPolicies, countAllAssignedPolicies, fetchClientPolicyForCompany, assignClientPolicy, uploadAssignClientPolicyMedia, sendCombinedQuotation, exportCsv, importCsv, uploadExisitingClientPolicy, uploadExisitingClientPolicyMedia, uploadClientPolicyMedia, updateClientPolicy, uploadUpdateClientPolicyMedia } from '../controllers/clientPolicy.controller.js';
 
 const router = express.Router();
 
@@ -12,6 +12,7 @@ router.post('/uploadExisitingClientPolicyMedia', auth, upload.any('file'), uploa
 router.post('/uploadExisitingClientPolicy', auth, uploadExisitingClientPolicy);
 // read
 router.get('/fetchClientPolicy', fetchClientPolicy);
+router.get('/fetchClientPolicyForCompany', fetchClientPolicyForCompany);
 router.get('/fetchAllUnassigned', auth, fetchAllUnassignedPolicies);
 router.get('/fetchAllAssigned', auth, fetchAllAssignedPolicies);
 router.get('/countAllAssigned', auth, countAllAssignedPolicies);
