@@ -75,6 +75,13 @@ const copyFileToSamePath = (oldPath, label) => {
     return newFileName;
 }
 
+const normalizePhoneNumber = (phoneNumber) => {
+    if (phoneNumber.startsWith('91') && phoneNumber.length > 10) {
+        return phoneNumber.slice(-10);
+    }
+    return phoneNumber;
+}
+
 export {
     cookiesOptions,
     condenseClientInfo,
@@ -82,4 +89,5 @@ export {
     generateAccessAndRefreshTokens,
     getExtension,
     copyFileToSamePath,
+    normalizePhoneNumber,
 }

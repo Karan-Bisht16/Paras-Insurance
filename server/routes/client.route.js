@@ -26,7 +26,7 @@ router.patch('/resetPassword', resetPassword);
 router.post('/find', findClient);
 router.get('/exportCsv', auth, exportCsv);
 router.post('/importCsv', auth, upload.single('file'), importCsv);
-router.post('/requestCallbackViaWebsite', auth, requestCallbackViaWebsite);
+router.post('/requestCallbackViaWebsite', requestCallbackViaWebsite);
 router.post('/requestCallbackViaWhatsApp', requestCallbackViaWhatsApp);
 router.get('/fetchAllRequestCallbacks', auth, fetchAllRequestCallbacks);
 router.get('/resolveRequestCallback', auth, resolveRequestCallback);

@@ -44,43 +44,13 @@ const ServicesGrid = () => {
                         <l-tail-chase size='40' speed='1.75' color='#111827' />
                         :
                         <div className='flex flex-wrap justify-center gap-6'>
-                            <div
-                                onClick={handleNavigateSip}
-                                className='animate-border inline-block bg-white bg-gradient-to-r from-blue-400 via-purple-900 to-blue-900 bg-[length:400%_400%] p-1 rounded-lg cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
-                            >
-                                <div className='h-full flex flex-col justify-center bg-white rounded-md py-2 px-2'>
-                                    <div className='w-full flex justify-center'>
-                                        <Add />
-                                    </div>
-                                    <PolicyCard
-                                        label='Start a SIP'
-                                        description='SIP is a smart, simple way to invest in mutual funds regularly, with offering MFSIP options and Reckoners to help choose the best funds.'
-                                        className='bg-white h-full transition-shadow hover:shadow-md'
-                                    />
-                                </div>
-                            </div>
-                            <div
-                                onClick={handleNavigateGeneralInsurance}
-                                className='animate-border inline-block bg-white bg-gradient-to-r from-blue-400 via-purple-900 to-blue-900 bg-[length:400%_400%] p-1 rounded-lg cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
-                            >
-                                <div className='h-full flex flex-col justify-center bg-white rounded-md py-2 px-2'>
-                                    <div className='w-full flex justify-center'>
-                                        <AddModerator />
-                                    </div>
-                                    <PolicyCard
-                                        label='General Insurance'
-                                        description={`Protect what matters with comprehensive coverage for life's uncertainties.`}
-                                        className='bg-white h-full transition-shadow hover:shadow-md'
-                                    />
-                                </div>
-                            </div>
                             {
                                 services.map((service, index) => (
-                                    <div onClick={() => handleNavigateInsuranceForm(service._id)} key={index}
-                                        // className='animate-border inline-block bg-white bg-gradient-to-r from-blue-400 via-purple-900 to-blue-900 bg-[length:400%_400%] p-1 rounded-lg cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
+                                    service._id === '6749f62acc685fd8ec7c2260' && // Life
+                                    <div
+                                        onClick={() => handleNavigateInsuranceForm(service._id)} key={index}
                                         className='block bg-white rounded-lg py-8 px-3 cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
                                     >
-                                        {/* <div className='h-full flex flex-col justify-center bg-white rounded-md py-4 px-2'> */}
                                         <div className='w-full flex justify-center'>
                                             <div dangerouslySetInnerHTML={{ __html: service.policyIcon }}></div>
                                         </div>
@@ -89,7 +59,111 @@ const ServicesGrid = () => {
                                             description={service.policyDescription}
                                             className='bg-white h-full transition-shadow hover:shadow-md'
                                         />
-                                        {/* </div> */}
+                                    </div>
+                                ))
+                            }
+                            <div
+                                onClick={handleNavigateGeneralInsurance}
+                                className='block bg-white rounded-lg py-8 px-3 cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
+                            >
+                                <div className='w-full flex justify-center'>
+                                    <AddModerator />
+                                </div>
+                                <PolicyCard
+                                    label='General Insurance'
+                                    description={`Protect what matters with comprehensive coverage for life's uncertainties.`}
+                                    className='bg-white h-full transition-shadow hover:shadow-md'
+                                />
+                            </div>
+                            {
+                                services.map((service, index) => (
+                                    service._id === '6749f86bcc685fd8ec7c2264' && // Health
+                                    <div
+                                        onClick={() => handleNavigateInsuranceForm(service._id)} key={index}
+                                        className='block bg-white rounded-lg py-8 px-3 cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
+                                    >
+                                        <div className='w-full flex justify-center'>
+                                            <div dangerouslySetInnerHTML={{ __html: service.policyIcon }}></div>
+                                        </div>
+                                        <PolicyCard
+                                            label={service.policyName}
+                                            description={service.policyDescription}
+                                            className='bg-white h-full transition-shadow hover:shadow-md'
+                                        />
+                                    </div>
+                                ))
+                            }
+                            {
+                                services.map((service, index) => (
+                                    service._id === '678570834b3769ddaf1920e3' && // Vehicle
+                                    <div
+                                        onClick={() => handleNavigateInsuranceForm(service._id)} key={index}
+                                        className='block bg-white rounded-lg py-8 px-3 cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
+                                    >
+                                        <div className='w-full flex justify-center'>
+                                            <div dangerouslySetInnerHTML={{ __html: service.policyIcon }}></div>
+                                        </div>
+                                        <PolicyCard
+                                            label={service.policyName}
+                                            description={service.policyDescription}
+                                            className='bg-white h-full transition-shadow hover:shadow-md'
+                                        />
+                                    </div>
+                                ))
+                            }
+                            {
+                                services.map((service, index) => (
+                                    service._id === '674dc05b0a6d0dae5168609c' && // Travel
+                                    <div
+                                        onClick={() => handleNavigateInsuranceForm(service._id)} key={index}
+                                        className='block bg-white rounded-lg py-8 px-3 cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
+                                    >
+                                        <div className='w-full flex justify-center'>
+                                            <div dangerouslySetInnerHTML={{ __html: service.policyIcon }}></div>
+                                        </div>
+                                        <PolicyCard
+                                            label={service.policyName}
+                                            description={service.policyDescription}
+                                            className='bg-white h-full transition-shadow hover:shadow-md'
+                                        />
+                                    </div>
+                                ))
+                            }
+                            <div
+                                onClick={handleNavigateSip}
+                                className='block bg-white rounded-lg py-8 px-3 cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
+                            >
+                                <div className='w-full flex justify-center'>
+                                    <Add />
+                                </div>
+                                <PolicyCard
+                                    label='Start a SIP'
+                                    description='SIP is a smart, simple way to invest in mutual funds regularly, with offering MFSIP options and Reckoners to help choose the best funds.'
+                                    className='bg-white h-full transition-shadow hover:shadow-md'
+                                />
+                            </div>
+                            {
+                                services.map((service, index) => (
+                                    (
+                                        service._id !== '6749f62acc685fd8ec7c2260' &&
+                                        service._id !== '6749f86bcc685fd8ec7c2264' &&
+                                        service._id !== '678570834b3769ddaf1920e3' &&
+                                        service._id !== '674dc05b0a6d0dae5168609c'
+                                    ) &&
+                                    <div
+                                        onClick={() => handleNavigateInsuranceForm(service._id)} key={index}
+                                        className='block bg-white rounded-lg py-8 px-3 cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
+                                    >
+                                        <div className='h-full flex flex-col justify-center bg-white rounded-md py-4 px-2'>
+                                            <div className='w-full flex justify-center'>
+                                                <div dangerouslySetInnerHTML={{ __html: service.policyIcon }}></div>
+                                            </div>
+                                            <PolicyCard
+                                                label={service.policyName}
+                                                description={service.policyDescription}
+                                                className='bg-white h-full transition-shadow hover:shadow-md'
+                                            />
+                                        </div>
                                     </div>
                                 ))
                             }
@@ -102,3 +176,56 @@ const ServicesGrid = () => {
 }
 
 export default ServicesGrid;
+
+{/* 
+    <div
+        onClick={handleNavigateSip}
+        className='animate-border inline-block bg-white bg-gradient-to-r from-blue-400 via-purple-900 to-blue-900 bg-[length:400%_400%] p-1 rounded-lg cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
+    >
+        <div className='h-full flex flex-col justify-center bg-white rounded-md py-2 px-2'>
+            <div className='w-full flex justify-center'>
+                <Add />
+            </div>
+            <PolicyCard
+                label='Start a SIP'
+                description='SIP is a smart, simple way to invest in mutual funds regularly, with offering MFSIP options and Reckoners to help choose the best funds.'
+                className='bg-white h-full transition-shadow hover:shadow-md'
+            />
+        </div>
+    </div>
+    <div
+        onClick={handleNavigateGeneralInsurance}
+        className='animate-border inline-block bg-white bg-gradient-to-r from-blue-400 via-purple-900 to-blue-900 bg-[length:400%_400%] p-1 rounded-lg cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
+    >
+        <div className='h-full flex flex-col justify-center bg-white rounded-md py-2 px-2'>
+            <div className='w-full flex justify-center'>
+                <AddModerator />
+            </div>
+            <PolicyCard
+                label='General Insurance'
+                description={`Protect what matters with comprehensive coverage for life's uncertainties.`}
+                className='bg-white h-full transition-shadow hover:shadow-md'
+            />
+        </div>
+    </div> 
+    {
+        services.map((service, index) => (
+            <div
+                onClick={() => handleNavigateInsuranceForm(service._id)} key={index}
+                // className='animate-border inline-block bg-white bg-gradient-to-r from-blue-400 via-purple-900 to-blue-900 bg-[length:400%_400%] p-1 rounded-lg cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
+                className='block bg-white rounded-lg py-8 px-3 cursor-pointer hover:shadow-[0_3px_10px_rgb(0,0,0,0.2)]'
+            >
+                <div className='h-full flex flex-col justify-center bg-white rounded-md py-4 px-2'>
+                    <div className='w-full flex justify-center'>
+                        <div dangerouslySetInnerHTML={{ __html: service.policyIcon }}></div>
+                    </div>
+                    <PolicyCard
+                        label={service.policyName}
+                        description={service.policyDescription}
+                        className='bg-white h-full transition-shadow hover:shadow-md'
+                    />
+                </div>
+            </div>
+        ))
+    }
+*/}

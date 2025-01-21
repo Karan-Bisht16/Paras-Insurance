@@ -1,7 +1,7 @@
 import express from 'express';
 import auth from '../middleware/auth.middleware.js';
 import upload from '../middleware/multer.middleware.js';
-import { createClientPolicy, fetchAllUnassignedPolicies, fetchAllAssignedPolicies, countAllAssignedPolicies, fetchClientPolicyForCompany, assignClientPolicy, uploadAssignClientPolicyMedia, sendCombinedQuotation, exportCsv, importCsv, uploadExisitingClientPolicy, uploadExisitingClientPolicyMedia, uploadClientPolicyMedia, updateClientPolicy, uploadUpdateClientPolicyMedia, fetchClientPolicy } from '../controllers/clientPolicy.controller.js';
+import { createClientPolicy, fetchAllUnassignedPolicies, fetchAllAssignedPolicies, countAllAssignedPolicies, fetchClientPolicyForCompany, assignClientPolicy, uploadAssignClientPolicyMedia, sendCombinedQuotation, exportCsv, importCsv, uploadExisitingClientPolicy, uploadExisitingClientPolicyMedia, uploadClientPolicyMedia, updateClientPolicy, uploadUpdateClientPolicyMedia, fetchClientPolicy, updateExisitingClientPolicy, uploadUpdateExistingClientPolicyMedia } from '../controllers/clientPolicy.controller.js';
 
 const router = express.Router();
 
@@ -19,6 +19,8 @@ router.get('/countAllAssigned', auth, countAllAssignedPolicies);
 // update
 router.post('/updateClientPolicy', auth, updateClientPolicy);
 router.post('/uploadUpdateClientPolicyMedia', auth, upload.any('files'), uploadUpdateClientPolicyMedia);
+router.post('/updateExisitingClientPolicy', auth, updateExisitingClientPolicy);
+router.post('/uploadUpdateExistingClientPolicyMedia', auth, upload.any('files'), uploadUpdateExistingClientPolicyMedia);
 router.post('/assignClientPolicy', auth, assignClientPolicy);
 router.post('/uploadAssignClientPolicyMedia', upload.any('files'), uploadAssignClientPolicyMedia);
 // misc

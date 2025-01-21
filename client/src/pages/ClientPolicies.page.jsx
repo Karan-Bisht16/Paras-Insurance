@@ -14,10 +14,10 @@ import { SnackBarContext } from '../contexts/SnackBar.context';
 import { ScrollArea } from '../components/subcomponents/ScrollArea';
 import PolicyDetailModal from '../components/subcomponents/PolicyDetailModal';
 import SipDetailModal from '../components/subcomponents/SipDetailModal';
+import AssignPolicyModal from '../components/subcomponents/AssignPolicyModal';
 import Footer from '../components/Footer';
 // importing helper functions
 import { toFormattedDate } from '../utils/helperFunctions';
-import AssignPolicyModal from '../components/subcomponents/AssignPolicyModal';
 
 const ClientPolicies = () => {
     const { id } = useParams();
@@ -181,7 +181,7 @@ const ClientPolicies = () => {
             const { data } = await uploadExisitingClientPolicy({ formData });
             await uploadExisitingClientPolicyMedia({ ...policyDocument, clientPolicyId: data?._id })
             getClientPoliciesAndSipsAndGeneralInsurances();
-            setSnackbarValue({ message: 'Policy Assigned!', status: 'success' });
+            setSnackbarValue({ message: 'Policy Uploaded!', status: 'success' });
             setSnackbarState(true);
             closeAssignPolicyModal();
         } catch (error) {
@@ -246,116 +246,191 @@ const ClientPolicies = () => {
                             </div>
                             <div className='pb-4 rounded-xl relative bg-white/95 shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
                                 <Tabs
-                                    value={tabIndex} onChange={handleTabIndexChange} variant="scrollable"
+                                    value={tabIndex} onChange={handleTabIndexChange} centered
                                     scrollButtons="auto" TabIndicatorProps={{ style: { background: "#111827" } }}
                                 >
-                                    <Tab label='Policies Interested In' className='!px-8 !py-4 !text-gray-900' />
-                                    <Tab label='Policies Assigned' className='!px-8 !py-4 !text-gray-900' />
-                                    <Tab label='SIP(s) Interested In' className='!px-8 !py-4 !text-gray-900' />
-                                    <Tab label='SIP(s) Assigned' className='!px-8 !py-4 !text-gray-900' />
-                                    <Tab label='General Insurances Interested In ' className='!px-8 !py-4 !text-gray-900' />
-                                    <Tab label='General Insurances Assigned' className='!px-8 !py-4 !text-gray-900' />
+                                    <Tab label={`Policies Interested In (${clientPolicies.filter(policy => policy.stage === 'Interested').length + clientGeneralInsurances.filter(generalInsurance => generalInsurance.stage === 'Interested').length})`} className='!px-8 !py-4 !text-gray-900' />
+                                    <Tab label={`Policies Assigned (${clientPolicies.filter(policy => policy.stage === 'Assigned').length + clientGeneralInsurances.filter(generalInsurance => generalInsurance.stage === 'Assigned').length})`} className='!px-8 !py-4 !text-gray-900' />
+                                    <Tab label={`SIP(s) Interested In (${clientSips.filter(sip => sip.stage === 'Interested').length})`} className='!px-8 !py-4 !text-gray-900' />
+                                    <Tab label={`SIP(s) Assigned (${clientSips.filter(sip => sip.stage === 'Assigned').length})`} className='!px-8 !py-4 !text-gray-900' />
                                 </Tabs>
                                 <Divider />
                                 <div className='px-8 py-2'>
                                     {(tabIndex === 0) &&
                                         <>
-                                            <p className='text-md text-gray-500 mb-2'>Total policies: {clientPolicies.filter(policy => policy.stage === 'Interested').length}</p>
-                                            {clientPolicies.filter(policy => policy.stage === 'Interested').length === 0
-                                                ?
-                                                <div className='bg-white mb-4 px-6 py-3 rounded-xl shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
-                                                    No issued policies
-                                                </div>
-                                                :
-                                                <ScrollArea className='max-h-[75vh]'>
-                                                    {clientPolicies.slice().reverse().map((policy, index) => (
-                                                        policy.stage === 'Interested' &&
-                                                        <div key={index} className='bg-white rounded-xl mb-4 px-4 shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
-                                                            <div className='pt-3 pb-12 px-2'>
-                                                                <h3 className='text-xl font-semibold'>{policy?.policyDetails?.policyName}</h3>
-                                                                <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
-                                                                    <Person />
-                                                                    <span className='text-gray-500'><strong>Applied By:</strong> {policy?.data?.email}</span>
+                                            <p className='text-md text-gray-500 mb-2'>
+                                                Total policies: {clientPolicies.filter(policy => policy.stage === 'Interested').length + clientGeneralInsurances.filter(generalInsurance => generalInsurance.stage === 'Interested').length}
+                                            </p>
+                                            <ScrollArea className='max-h-[75vh] no-scrollbar'>
+                                                {clientPolicies.filter(policy => policy.stage === 'Interested').length === 0 && clientGeneralInsurances.filter(generalInsurance => generalInsurance.stage === 'Interested').length === 0
+                                                    ?
+                                                    <div className='bg-white mb-4 px-6 py-3 rounded-xl shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
+                                                        No issued policies
+                                                    </div>
+                                                    :
+                                                    <>
+                                                        {clientPolicies.filter(policy => policy.stage === 'Interested').length !== 0 &&
+                                                            clientPolicies.slice().reverse().map((policy, index) => (
+                                                                policy.stage === 'Interested' &&
+                                                                <div key={index} className='bg-white rounded-xl mb-4 px-4 shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
+                                                                    <div className='pt-3 pb-12 px-2'>
+                                                                        <h3 className='text-xl font-semibold'>{policy?.policyDetails?.policyName}</h3>
+                                                                        <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
+                                                                            <Person />
+                                                                            <span className='text-gray-500'><strong>Applied By:</strong> {policy?.data?.email}</span>
+                                                                        </div>
+                                                                        <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
+                                                                            <Event />
+                                                                            <span className='text-gray-500'><strong> Applied On:</strong> {toFormattedDate(policy.createdAt)}</span>
+                                                                        </div>
+                                                                        <Button
+                                                                            onClick={() => selectPolicy({ data: policy?.data, format: policy?.policyDetails, stage: policy?.stage })}
+                                                                            className='!flex !gap-2 !items-center !justify-center float-right !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                        >
+                                                                            Details
+                                                                            <Info className='!size-4' />
+                                                                        </Button>
+                                                                        {policy?.combinedQuotationDetails && Object.keys(policy?.combinedQuotationDetails).length !== 0 && policy?.combinedQuotationDetails?.status !== 'Pending' &&
+                                                                            <Button
+                                                                                onClick={() => selectCombinedQuotation(policy?.combinedQuotationDetails)}
+                                                                                className='!flex !gap-2 !items-center !justify-center float-right !mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                            >
+                                                                                Quotations
+                                                                                <List className='!size-4' />
+                                                                            </Button>
+                                                                        }
+                                                                    </div>
                                                                 </div>
-                                                                <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
-                                                                    <Event />
-                                                                    <span className='text-gray-500'><strong> Applied On:</strong> {toFormattedDate(policy.createdAt)}</span>
+                                                            ))}
+                                                        {clientGeneralInsurances.filter(generalInsurance => generalInsurance.stage === 'Interested').length !== 0 &&
+                                                            clientGeneralInsurances.slice().reverse().map((generalInsurance, index) => (
+                                                                generalInsurance.stage === 'Interested' &&
+                                                                <div key={index} className='bg-white rounded-xl mb-4 px-4 shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
+                                                                    <div className='py-3 px-2'>
+                                                                        <h3 className='text-xl font-semibold'>General Insurace ({generalInsurance?.policyType})</h3>
+                                                                        <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
+                                                                            <Event />
+                                                                            <span className='text-gray-500'><strong> Applied On:</strong> {toFormattedDate(generalInsurance.createdAt)}</span>
+                                                                        </div>
+                                                                        <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
+                                                                            <MailOutline />
+                                                                            <span className='text-gray-500'><strong> SIP Email:</strong> {generalInsurance?.personalDetails?.contact?.email}</span>
+                                                                        </div>
+                                                                        <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
+                                                                            <Phone />
+                                                                            <span className='text-gray-500'><strong> SIP Phone:</strong> {generalInsurance?.personalDetails?.contact?.phone}</span>
+                                                                        </div>
+                                                                        <div className='flex justify-end'>
+                                                                            <Button
+                                                                                onClick={() => selectGeneralInsurance(generalInsurance)}
+                                                                                className='!flex !gap-2 !items-center !justify-center !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                            >
+                                                                                Details
+                                                                                <Info className='!size-4' />
+                                                                            </Button>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                                <Button
-                                                                    onClick={() => selectPolicy({ data: policy?.data, format: policy?.policyDetails, stage: policy?.stage })}
-                                                                    className='!flex !gap-2 !items-center !justify-center float-right !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
-                                                                >
-                                                                    Details
-                                                                    <Info className='!size-4' />
-                                                                </Button>
-                                                                {policy?.combinedQuotationDetails && Object.keys(policy?.combinedQuotationDetails).length !== 0 && policy?.combinedQuotationDetails?.status !== 'Pending' &&
-                                                                    <Button
-                                                                        onClick={() => selectCombinedQuotation(policy?.combinedQuotationDetails)}
-                                                                        className='!flex !gap-2 !items-center !justify-center float-right !mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
-                                                                    >
-                                                                        Quotations
-                                                                        <List className='!size-4' />
-                                                                    </Button>
-                                                                }
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </ScrollArea>
-                                            }
+                                                            ))}
+                                                    </>
+                                                }
+                                            </ScrollArea>
                                         </>
                                     } {(tabIndex === 1) &&
                                         <>
-                                            <p className='text-md text-gray-500 mb-2'>Total policies: {clientPolicies.filter(policy => policy.stage === 'Assigned').length}</p>
-                                            {clientPolicies.filter(policy => policy.stage === 'Assigned').length === 0
-                                                ?
-                                                <div className='bg-white mb-4 px-6 py-3 rounded-xl shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
-                                                    No policies assigned
-                                                </div>
-                                                :
-                                                <ScrollArea className='max-h-[75vh]'>
-                                                    {clientPolicies.slice().reverse().map((policy) => (
-                                                        policy.stage === 'Assigned' &&
-                                                        <div key={policy?._id} className='bg-white rounded-xl mb-4 px-4 shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
-                                                            <div className='pt-3 pb-12 px-2'>
-                                                                <h3 className='text-xl font-semibold'>{policy?.policyDetails?.policyName}</h3>
-                                                                <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
-                                                                    <Person />
-                                                                    <span className='text-gray-500'><strong>Applied By:</strong> {policy?.data?.email}</span>
+                                            <p className='text-md text-gray-500 mb-2'>
+                                                Total policies: {clientPolicies.filter(policy => policy.stage === 'Assigned').length + clientGeneralInsurances.filter(generalInsurance => generalInsurance.stage === 'Assigned').length}
+                                            </p>
+                                            <ScrollArea className='max-h-[75vh] no-scrollbar'>
+                                                {clientPolicies.filter(policy => policy.stage === 'Assigned').length === 0 && clientGeneralInsurances.filter(generalInsurance => generalInsurance.stage === 'Assigned').length === 0
+                                                    ?
+                                                    <div className='bg-white mb-4 px-6 py-3 rounded-xl shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
+                                                        No policies assigned
+                                                    </div>
+                                                    :
+                                                    <>
+                                                        {clientPolicies.filter(policy => policy.stage === 'Assigned').length !== 0 &&
+                                                            clientPolicies.slice().reverse().map((policy) => (
+                                                                policy.stage === 'Assigned' &&
+                                                                <div key={policy?._id} className='bg-white rounded-xl mb-4 px-4 shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
+                                                                    <div className='pt-3 pb-12 px-2'>
+                                                                        <h3 className='text-xl font-semibold'>{policy?.policyDetails?.policyName}</h3>
+                                                                        <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
+                                                                            <Person />
+                                                                            <span className='text-gray-500'><strong>Applied By:</strong> {policy?.data?.email}</span>
+                                                                        </div>
+                                                                        <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
+                                                                            <Event />
+                                                                            <span className='text-gray-500'><strong>Applied On:</strong> {toFormattedDate(policy.createdAt)}</span>
+                                                                        </div>
+                                                                        <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
+                                                                            <AssignmentTurnedIn />
+                                                                            <span className='text-gray-500'><strong>Expiry Date:</strong> {policy?.expiryDate}</span>
+                                                                        </div>
+                                                                        <Button
+                                                                            onClick={() => selectPolicy({
+                                                                                data: policy?.data,
+                                                                                format: policy?.policyDetails,
+                                                                                stage: policy?.stage,
+                                                                                policyId: policy?.policyId,
+                                                                                policyNo: policy?.policyNo,
+                                                                                policyDocumentURL: policy?.policyDocumentURL,
+                                                                            })}
+                                                                            className='!ml-2 !flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                        >
+                                                                            Details
+                                                                            <Info className='!size-4' />
+                                                                        </Button>
+                                                                        <Button
+                                                                            onClick={() => handleOpenInNew(policy?.policyDocumentURL)}
+                                                                            className='!flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                        >
+                                                                            Policy Document
+                                                                            <Assignment className='!size-4' />
+                                                                        </Button>
+                                                                    </div>
                                                                 </div>
-                                                                <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
-                                                                    <Event />
-                                                                    <span className='text-gray-500'><strong>Applied On:</strong> {toFormattedDate(policy.createdAt)}</span>
+                                                            ))}
+                                                        {clientGeneralInsurances.filter(generalInsurance => generalInsurance.stage === 'Assigned').length !== 0 &&
+                                                            clientGeneralInsurances.slice().reverse().map((generalInsurance, index) => (
+                                                                generalInsurance.stage === 'Assigned' &&
+                                                                <div key={index} className='bg-white rounded-xl mb-4 px-4 shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
+                                                                    <div className='py-3 px-2'>
+                                                                        <h3 className='text-xl font-semibold'>{generalInsurance?.policyType}</h3>
+                                                                        <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
+                                                                            <Event />
+                                                                            <span className='text-gray-500'><strong> Applied On:</strong> {toFormattedDate(generalInsurance.createdAt)}</span>
+                                                                        </div>
+                                                                        <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
+                                                                            <MailOutline />
+                                                                            <span className='text-gray-500'><strong> SIP Email:</strong> {generalInsurance?.personalDetails?.contact?.email}</span>
+                                                                        </div>
+                                                                        <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
+                                                                            <Phone />
+                                                                            <span className='text-gray-500'><strong> SIP Phone:</strong> {generalInsurance?.personalDetails?.contact?.phone}</span>
+                                                                        </div>
+                                                                        <div className='flex gap-2 justify-end'>
+                                                                            <Button
+                                                                                onClick={() => handleOpenInNew(generalInsurance?.generalInsuranceDocumentURL)}
+                                                                                className='!flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                            >
+                                                                                General Insurance Document
+                                                                                <Assignment className='!size-4' />
+                                                                            </Button>
+                                                                            <Button
+                                                                                onClick={() => selectGeneralInsurance(generalInsurance)}
+                                                                                className='!flex !gap-2 !items-center !justify-center !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                            >
+                                                                                Details
+                                                                                <Info className='!size-4' />
+                                                                            </Button>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                                <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
-                                                                    <AssignmentTurnedIn />
-                                                                    <span className='text-gray-500'><strong>Expiry Date:</strong> {policy?.expiryDate}</span>
-                                                                </div>
-                                                                <Button
-                                                                    onClick={() => selectPolicy({
-                                                                        data: policy?.data,
-                                                                        format: policy?.policyDetails,
-                                                                        stage: policy?.stage,
-                                                                        policyId: policy?.policyId,
-                                                                        policyNo: policy?.policyNo,
-                                                                        policyDocumentURL: policy?.policyDocumentURL,
-                                                                    })}
-                                                                    className='!ml-2 !flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
-                                                                >
-                                                                    Details
-                                                                    <Info className='!size-4' />
-                                                                </Button>
-                                                                <Button
-                                                                    onClick={() => handleOpenInNew(policy?.policyDocumentURL)}
-                                                                    className='!flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
-                                                                >
-                                                                    Policy Document
-                                                                    <Assignment className='!size-4' />
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </ScrollArea>
-                                            }
+                                                            ))}
+                                                    </>
+                                                }
+                                            </ScrollArea>
                                         </>
                                     } {(tabIndex === 2) &&
                                         <>
@@ -366,7 +441,7 @@ const ClientPolicies = () => {
                                                     No Sips found
                                                 </div>
                                                 :
-                                                <ScrollArea className='max-h-[75vh]'>
+                                                <ScrollArea className='max-h-[75vh] no-scrollbar'>
                                                     {clientSips.slice().reverse().map((sip, index) => (
                                                         sip.stage === 'Interested' &&
                                                         <div key={index} className='bg-white rounded-xl mb-4 px-4 shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
@@ -407,7 +482,7 @@ const ClientPolicies = () => {
                                                     No Sips found
                                                 </div>
                                                 :
-                                                <ScrollArea className='max-h-[75vh]'>
+                                                <ScrollArea className='max-h-[75vh] no-scrollbar'>
                                                     {clientSips.slice().reverse().map((sip, index) => (
                                                         sip.stage === 'Assigned' &&
                                                         <div key={index} className='bg-white rounded-xl mb-4 px-4 shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
@@ -434,97 +509,6 @@ const ClientPolicies = () => {
                                                                     </Button>
                                                                     <Button
                                                                         onClick={() => selectSip(sip)}
-                                                                        className='!flex !gap-2 !items-center !justify-center !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
-                                                                    >
-                                                                        Details
-                                                                        <Info className='!size-4' />
-                                                                    </Button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </ScrollArea>
-                                            }
-                                        </>
-                                    } {(tabIndex === 4) &&
-                                        <>
-                                            <p className='text-md text-gray-500 mb-2'>Total General Insurances: {clientGeneralInsurances.filter(generalInsurance => generalInsurance.stage === 'Interested').length}</p>
-                                            {clientGeneralInsurances.length === 0
-                                                ?
-                                                <div className='bg-white mb-4 px-6 py-3 rounded-xl shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
-                                                    No General Insurance found
-                                                </div>
-                                                :
-                                                <ScrollArea className='max-h-[75vh]'>
-                                                    {clientGeneralInsurances.slice().reverse().map((generalInsurance, index) => (
-                                                        generalInsurance.stage === 'Interested' &&
-                                                        <div key={index} className='bg-white rounded-xl mb-4 px-4 shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
-                                                            <div className='py-3 px-2'>
-                                                                <h3 className='text-xl font-semibold'>{generalInsurance?.policyType}</h3>
-                                                                <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
-                                                                    <Event />
-                                                                    <span className='text-gray-500'><strong> Applied On:</strong> {toFormattedDate(generalInsurance.createdAt)}</span>
-                                                                </div>
-                                                                <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
-                                                                    <MailOutline />
-                                                                    <span className='text-gray-500'><strong> SIP Email:</strong> {generalInsurance?.personalDetails?.contact?.email}</span>
-                                                                </div>
-                                                                <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
-                                                                    <Phone />
-                                                                    <span className='text-gray-500'><strong> SIP Phone:</strong> {generalInsurance?.personalDetails?.contact?.phone}</span>
-                                                                </div>
-                                                                <div className='flex justify-end'>
-                                                                    <Button
-                                                                        onClick={() => selectGeneralInsurance(generalInsurance)}
-                                                                        className='!flex !gap-2 !items-center !justify-center !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
-                                                                    >
-                                                                        Details
-                                                                        <Info className='!size-4' />
-                                                                    </Button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </ScrollArea>
-                                            }
-                                        </>
-                                    } {(tabIndex === 5) &&
-                                        <>
-                                            <p className='text-md text-gray-500 mb-2'>Total General Insurances: {clientGeneralInsurances.filter(generalInsurance => generalInsurance.stage === 'Assigned').length}</p>
-                                            {clientGeneralInsurances.length === 0
-                                                ?
-                                                <div className='bg-white mb-4 px-6 py-3 rounded-xl shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
-                                                    No General Insurance found
-                                                </div>
-                                                :
-                                                <ScrollArea className='max-h-[75vh]'>
-                                                    {clientGeneralInsurances.slice().reverse().map((generalInsurance, index) => (
-                                                        generalInsurance.stage === 'Assigned' &&
-                                                        <div key={index} className='bg-white rounded-xl mb-4 px-4 shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
-                                                            <div className='py-3 px-2'>
-                                                                <h3 className='text-xl font-semibold'>{generalInsurance?.policyType}</h3>
-                                                                <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
-                                                                    <Event />
-                                                                    <span className='text-gray-500'><strong> Applied On:</strong> {toFormattedDate(generalInsurance.createdAt)}</span>
-                                                                </div>
-                                                                <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
-                                                                    <MailOutline />
-                                                                    <span className='text-gray-500'><strong> SIP Email:</strong> {generalInsurance?.personalDetails?.contact?.email}</span>
-                                                                </div>
-                                                                <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
-                                                                    <Phone />
-                                                                    <span className='text-gray-500'><strong> SIP Phone:</strong> {generalInsurance?.personalDetails?.contact?.phone}</span>
-                                                                </div>
-                                                                <div className='flex gap-2 justify-end'>
-                                                                    <Button
-                                                                        onClick={() => handleOpenInNew(generalInsurance?.generalInsuranceDocumentURL)}
-                                                                        className='!flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
-                                                                    >
-                                                                        General Insurance Document
-                                                                        <Assignment className='!size-4' />
-                                                                    </Button>
-                                                                    <Button
-                                                                        onClick={() => selectGeneralInsurance(generalInsurance)}
                                                                         className='!flex !gap-2 !items-center !justify-center !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
                                                                     >
                                                                         Details

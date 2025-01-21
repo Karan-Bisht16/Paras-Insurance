@@ -58,9 +58,19 @@ const getSuffix = (number) => {
     return suffix;
 }
 
+const convertToISODate = (dateString) => {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+    }
+
+    const [day, month, year] = dateString.split("-");
+    return `${year}-${month}-${day}`;
+};
+
 export {
     toFormattedDate,
     toFormattedTime,
     calculateAge,
     getSuffix,
+    convertToISODate,
 };

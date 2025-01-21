@@ -547,6 +547,7 @@ const fetchAllAssignedPolicies = async (req, res) => {
                     policyId: 1,
                     policyNo: 1,
                     policyDocumentURL: 1,
+                    expiryDate: 1,
                     assignedBy: 1,
                     clientDetails: {
                         firstName: '$clientData.personalDetails.firstName',
@@ -566,7 +567,9 @@ const fetchAllAssignedPolicies = async (req, res) => {
                     createdAt: 1,
                     updatedAt: 1,
                 }
-            }
+            },
+            { $sort: { createdAt: -1 } }
+
         ]);
 
         res.status(200).json(assignedPolicies);
@@ -631,6 +634,61 @@ const uploadUpdateClientPolicyMedia = async (req, res) => {
 
             await ClientPolicy.findByIdAndUpdate(selectedPolicyId,
                 { $set: { [`data.${file.fieldname}`]: fileURL } },
+                { new: true }
+            );
+        }
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+}
+// working
+const updateExisitingClientPolicy = async (req, res) => {
+    try {
+        const clientId = req.client._id;
+        const isCurrentClientEmployee = await Employee.findOne({ clientId: clientId });
+        if (!isCurrentClientEmployee) return res.status(400).json({ message: 'Unauthorised access' });
+
+        const { formData, selectedPolicyId } = req.body;
+        const updatedPolicy = await ClientPolicy.findByIdAndUpdate(selectedPolicyId,
+            { $set: { ...formData } },
+            { new: true }
+        );
+
+        if (!updatedPolicy) return res.status(404).json({ message: 'Policy not found!' });
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' });
+    }
+}
+// 
+const uploadUpdateExistingClientPolicyMedia = async (req, res) => {
+    try {
+        const clientId = req.client._id;
+        const isCurrentClientEmployee = await Employee.findOne({ clientId: clientId });
+        if (!isCurrentClientEmployee) return res.status(400).json({ message: 'Unauthorised access' });
+
+        const { selectedPolicyId } = req.body;
+
+        const existingPolicy = await ClientPolicy.findById(selectedPolicyId);
+        if (!existingPolicy) return res.status(404).json({ message: 'Policy not found' });
+
+        if (req.files[0]) {
+            const file = req.files[0];
+            const oldFileUrl = existingPolicy?.policyDocumentURL;
+            if (oldFileUrl) {
+                const oldFilePath = path.join(__dirname, 'uploads', path.basename(oldFileUrl));
+                if (fs.existsSync(oldFilePath)) fs.unlinkSync(oldFilePath)
+            }
+
+            const fileURL = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
+
+            await ClientPolicy.findByIdAndUpdate(selectedPolicyId,
+                { $set: { 'policyDocumentURL': fileURL } },
                 { new: true }
             );
         }
@@ -959,6 +1017,8 @@ export {
     countAllAssignedPolicies,
     updateClientPolicy,
     uploadUpdateClientPolicyMedia,
+    updateExisitingClientPolicy,
+    uploadUpdateExistingClientPolicyMedia,
     assignClientPolicy,
     uploadAssignClientPolicyMedia,
     sendCombinedQuotation,

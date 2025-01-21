@@ -3,20 +3,18 @@ import { CircularProgress, TextField } from '@mui/material';
 import { Phone, Mail, Facebook, Twitter } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 // importing api end-points
-import { requestCallbackViaWebsite, findClient, login, register } from '../api';
+import { requestCallbackViaWebsite } from '../api';
 // importing contexts
 import { ClientContext } from '../contexts/Client.context';
 import { SnackBarContext } from '../contexts/SnackBar.context';
 // importing assets
 import imgContactUs from '../assets/img-contactUs.svg';
-import RegisterModal from '../components/subcomponents/RegisterModal';
 
 const ContactForm = () => {
     const navigate = useNavigate();
-    const { isLoggedIn, setIsLoggedIn, condenseClientInfo, setCondenseClientInfo } = useContext(ClientContext);
+    const { isLoggedIn, condenseClientInfo } = useContext(ClientContext);
     const { setSnackbarState, setSnackbarValue } = useContext(SnackBarContext);
 
-    const [regiserModalError, setRegisterModalError] = useState('');
     const [formData, setFormData] = useState({
         firstName: condenseClientInfo?.firstName || '',
         lastName: condenseClientInfo?.lastName || '',
@@ -30,67 +28,20 @@ const ContactForm = () => {
         setFormData({ ...formData, [name]: value });
     }
 
-    const [showRegisterModal, setShowRegisterModal] = useState(false);
-    const [emailOrPhone, setEmailOrPhone] = useState('');
-    const [loginOrRegister, setLoginOrRegister] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const handleSubmit = async (event) => {
         event.preventDefault();
         setSubmitting(true);
         try {
             if (isLoggedIn) {
-                await requestCallbackViaWebsite(formData);
-                navigate('/', { state: { status: 'success', message: 'Callback requested', time: new Date().getTime() } })
+                await requestCallbackViaWebsite({ ...formData, clientId: condenseClientInfo._id });
             } else {
-                try {
-                    const { data } = await findClient({ email: formData.email, phone: formData.phone });
-                    setEmailOrPhone(data);
-                    setLoginOrRegister('Login');
-                } catch (error) {
-                    const { status } = error;
-                    if (status === 404) setLoginOrRegister('Register');
-                }
-                setShowRegisterModal(true);
+                await requestCallbackViaWebsite(formData);
             }
+            navigate('/', { state: { status: 'success', message: 'Callback requested', time: new Date().getTime() } });
         } catch (error) {
             setSnackbarValue({ message: error?.response?.data.message, status: 'error' });
             setSnackbarState(true);
-        }
-        setSubmitting(false);
-    }
-
-    const handleLogin = async (password) => {
-        try {
-            setRegisterModalError('');
-
-            if (loginOrRegister === 'Login') {
-                const { data } = await login({ emailOrPhone, password });
-                await setCondenseClientInfo(data);
-                await setIsLoggedIn(true);
-                await setShowRegisterModal(false);
-
-                setSubmitting(true);
-                await requestCallbackViaWebsite(formData);
-
-            } else if (loginOrRegister === 'Register') {
-                const { data } = await register({
-                    firstName: formData.firstName,
-                    lastName: formData.lastName,
-                    email: formData.email,
-                    phone: formData.phone,
-                    password
-                });
-                await setCondenseClientInfo(data);
-                await setIsLoggedIn(true);
-                await setShowRegisterModal(false);
-
-                setSubmitting(true);
-                await requestCallbackViaWebsite(formData);
-            }
-
-            navigate('/', { state: { status: 'success', message: 'Policy added to your account per your interest!', time: new Date().getTime() } })
-        } catch (error) {
-            setRegisterModalError(error?.response?.data?.message);
         }
         setSubmitting(false);
     }
@@ -125,11 +76,13 @@ const ContactForm = () => {
                                         <TextField
                                             type="text" label='First Name' name="firstName" placeholder="Enter your first name" required
                                             value={formData.firstName} onChange={handleChange}
+                                            InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                                             className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:border-gray-400"
                                         />
                                         <TextField
-                                            type="text" label='Last Name' name="lastName" placeholder="Enter your last name" required
+                                            type="text" label='Last Name' name="lastName" placeholder="Enter your last name"
                                             value={formData.lastName} onChange={handleChange}
+                                            InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                                             className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:border-gray-400"
                                         />
                                     </div>
@@ -137,6 +90,7 @@ const ContactForm = () => {
                                         <TextField
                                             type="email" label='Email' name="email" placeholder="Enter your email" required
                                             value={formData.email} onChange={handleChange}
+                                            InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                                             className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:border-gray-400"
                                         />
                                     </div>
@@ -144,21 +98,28 @@ const ContactForm = () => {
                                         <TextField
                                             type="tel" label='Phone (excluding +91)' name="phone" placeholder="Enter your phone" required
                                             value={formData.phone} onChange={handleChange}
+                                            InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                                             className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:border-gray-400"
                                         />
                                     </div>
                                     <div>
-                                        <textarea
-                                            name="message" placeholder="Go ahead, we are listening..." rows={4} required
+                                        <TextField
+                                            name="message" label='Message' placeholder="Go ahead, we are listening..." multiline rows={3} required
                                             value={formData.message} onChange={handleChange}
+                                            InputLabelProps={{ sx: { '.MuiInputLabel-asterisk': { color: 'red' } } }}
                                             className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:border-gray-400"
                                         />
                                     </div>
-                                    <button
-                                        type="submit"
-                                        className="w-full bg-[#111827] text-white py-3 rounded-lg hover:bg-gray-800 transition duration-300"
-                                    >Submit
-                                    </button>
+                                    <div>
+                                        <button
+                                            type="submit"
+                                            className="w-full bg-[#111827] text-white py-3 rounded-lg hover:bg-gray-800 transition duration-300"
+                                        >Submit
+                                        </button>
+                                        <p className='text-sm mt-2 text-gray-600'>
+                                            <span className='text-red-600'>*</span> Mandatory fields
+                                        </p>
+                                    </div>
                                 </form>
 
                             </div>
@@ -193,13 +154,6 @@ const ContactForm = () => {
                     </div>
                 </div>
             </div>
-            <RegisterModal
-                loginOrRegister={loginOrRegister}
-                isOpen={showRegisterModal}
-                onClose={() => setShowRegisterModal(false)}
-                onSubmit={handleLogin}
-                error={regiserModalError}
-            />
         </div>
     )
 }

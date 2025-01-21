@@ -94,7 +94,7 @@ const Authentication = () => {
                 const { data } = await register(authData);
                 setCondenseClientInfo(data);
                 setIsLoggedIn(true);
-                navigate('/', { state: { status: 'success', message: 'Registered successfully!', time: new Date().getTime() } })
+                navigate('/', { state: { status: 'success', message: 'Registered successfully!', time: new Date().getTime() } });
             } catch (error) {
                 handleError(error);
             }
@@ -103,7 +103,7 @@ const Authentication = () => {
                 const { data } = await login(authData);
                 setCondenseClientInfo(data);
                 setIsLoggedIn(true);
-                navigate('/', { state: { status: 'success', message: 'Login successful!', time: new Date().getTime() } })
+                navigate('/', { state: { status: 'success', message: 'Login successful!', time: new Date().getTime() } });
             } catch (error) {
                 handleError(error);
             }

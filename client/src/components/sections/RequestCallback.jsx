@@ -25,7 +25,7 @@ const RequestCallback = () => {
 
     const handleResolved = async ({ clientId, notesId }) => {
         try {
-            const { data } = await resolveRequestCallback({ clientId, notesId });
+            await resolveRequestCallback({ clientId, notesId });
             getAllCallbacks();
             setSnackbarValue({ message: 'Status updated to resolved!', status: 'success' });
             setSnackbarState(true);

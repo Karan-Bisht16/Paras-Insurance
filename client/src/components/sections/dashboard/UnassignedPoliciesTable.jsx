@@ -294,7 +294,7 @@ const UnassignedPoliciesTable = ({ unassignedPolicies, onAssignPolicy, reload })
                                         </Tooltip>
                                     </button>
                                     <button className="p-1 border border-gray-300 rounded-md shadow-sm text-blue-600 hover:text-blue-900 ml-1 focus:outline-none">
-                                        <Tooltip title='View policy details'>
+                                        <Tooltip title='Edit policy details'>
                                             <Edit onClick={() => handleOpenPolicyForEdit(policy)} />
                                         </Tooltip>
                                     </button>
@@ -325,7 +325,7 @@ const UnassignedPoliciesTable = ({ unassignedPolicies, onAssignPolicy, reload })
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                                     <button className="text-green-600 hover:text-green-900">
-                                        <Tooltip title='Policy assigned'>
+                                        <Tooltip title='Assign policy'>
                                             <Checkbox onChange={() => onAssignPolicy(policy._id)} checked={false} />
                                         </Tooltip>
                                     </button>

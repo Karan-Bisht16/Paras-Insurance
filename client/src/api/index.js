@@ -66,6 +66,12 @@ export const uploadUpdateClientPolicyMedia = (media) => API.post('/clientPolicy/
         'Content-Type': 'multipart/form-data',
     }
 });
+export const updateExisitingClientPolicy = (formData) => API.post('/clientPolicy/updateExisitingClientPolicy', formData);
+export const uploadUpdateExistingClientPolicyMedia = (media) => API.post('/clientPolicy/uploadUpdateExistingClientPolicyMedia', media, {
+    headers: {
+        'Content-Type': 'multipart/form-data',
+    }
+});
 export const assignClientPolicy = (data) => API.post('/clientPolicy/assignClientPolicy', data);
 export const uploadAssignClientPolicyMedia = (media) => API.post('/clientPolicy/uploadAssignClientPolicyMedia', media, {
     headers: {

@@ -102,7 +102,7 @@ const CallbackTable = ({ callbackData, onResolved }) => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {callback.source}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="px-6 py-4 text-sm text-gray-500">
                                     {callback.message}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

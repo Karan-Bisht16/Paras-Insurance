@@ -2,14 +2,15 @@ import { useContext, useMemo, useState } from 'react';
 import { Button, CircularProgress, Tooltip } from '@mui/material';
 import { Edit, OpenInNew, SearchOutlined, SystemUpdateAlt, Visibility } from '@mui/icons-material';
 // importing api end-points
-import { exportClientPolicyCsv, sendCombinedQuotation, updateClientPolicy, uploadUpdateClientPolicyMedia } from '../../../api';
+import { exportClientPolicyCsv, sendCombinedQuotation, updateClientPolicy, updateExisitingClientPolicy, uploadUpdateClientPolicyMedia, uploadUpdateExistingClientPolicyMedia } from '../../../api';
 // importing contexts
 import { SnackBarContext } from '../../../contexts/SnackBar.context';
 // importing components
 import EditPolicyModal from '../../subcomponents/EditPolicyModal';
 import PolicyDetailModal from '../../subcomponents/PolicyDetailModal';
+import UploadedPolicyForm from './UploadedPolicyForm';
 // importing helper functions
-import { toFormattedDate } from '../../../utils/helperFunctions';
+import { toFormattedDate, convertToISODate } from '../../../utils/helperFunctions';
 
 const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
     const { setSnackbarState, setSnackbarValue } = useContext(SnackBarContext);
@@ -92,6 +93,50 @@ const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
             if (status === 200) {
                 await uploadUpdateClientPolicyMedia({ ...files, selectedPolicyId: selectedPolicyId });
             }
+            reload();
+            setSnackbarValue({ message: 'Policy details updated successfully!', status: 'success' });
+            setSnackbarState(true);
+            return false;
+        } catch (error) {
+            return error?.response?.data?.message;
+        }
+    };
+
+    const [isUploadedPolicySelectedForEdit, setIsUploadedPolicySelectedForEdit] = useState(false);
+    const [selectedUploadedPolicyForEdit, setSelectedUploadedPolicyForEdit] = useState({});
+    const handleFormDataChange = (event) => {
+        const { name, value } = event.target;
+        setSelectedUploadedPolicyForEdit(prevSelectedUploadedPolicyForEdit => {
+            return { ...prevSelectedUploadedPolicyForEdit, [name]: value }
+        })
+    }
+    const [policyDocument, setPolicyDocument] = useState('');
+    const handleDocumentUpload = (event) => {
+        const file = event.target.files[0];
+        setPolicyDocument(prevFiles => {
+            return { ...prevFiles, 'policyDocument': file }
+        });
+    }
+    const handleOpenUploadedPolicyForEdit = (policyData) => {
+        setSelectedPolicyId(policyData._id);
+        setSelectedUploadedPolicyForEdit({
+            expiryDate: convertToISODate(policyData?.expiryDate),
+            policyDocumentURL: policyData?.policyDocumentURL,
+            policyNo: policyData?.policyNo,
+        });
+        setIsUploadedPolicySelectedForEdit(true);
+    }
+    const handleCloseUploadedPolicyForEdit = () => {
+        setSelectedPolicyId('');
+        setSelectedUploadedPolicyForEdit({});
+        setPolicyDocument('');
+        setIsUploadedPolicySelectedForEdit(false);
+    }
+    const handleEditUploadedPolicySubmit = async () => {
+        try {
+            await updateExisitingClientPolicy({ formData: selectedUploadedPolicyForEdit, selectedPolicyId })
+            await uploadUpdateExistingClientPolicyMedia({ ...policyDocument, selectedPolicyId });
+            handleCloseUploadedPolicyForEdit();
             reload();
             setSnackbarValue({ message: 'Policy details updated successfully!', status: 'success' });
             setSnackbarState(true);
@@ -184,12 +229,18 @@ const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
                                     <div className="text-sm text-gray-500">{toFormattedDate(policy.createdAt)}</div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                    <button className={`text-gray-600 hover:text-blue-900 ${policy.policyId !== '6777932ef2013d3cfcc27347' && 'mr-2'}`}>
+                                    <button className='text-gray-600 hover:text-blue-900 mr-2'>
                                         <Tooltip title='View policy details'>
                                             <Visibility onClick={() => handleSelectPolicy(policy)} />
                                         </Tooltip>
                                     </button>
-                                    {policy.policyId !== '6777932ef2013d3cfcc27347' &&
+                                    {policy.policyId === '6777932ef2013d3cfcc27347' ?
+                                        <button className="p-1 border border-gray-300 rounded-md shadow-sm text-blue-600 hover:text-blue-900 ml-1 focus:outline-none">
+                                            <Tooltip title='View policy details'>
+                                                <Edit onClick={() => handleOpenUploadedPolicyForEdit(policy)} />
+                                            </Tooltip>
+                                        </button>
+                                        :
                                         <button className="p-1 border border-gray-300 rounded-md shadow-sm text-blue-600 hover:text-blue-900 ml-1 focus:outline-none">
                                             <Tooltip title='View policy details'>
                                                 <Edit onClick={() => handleOpenPolicyForEdit(policy)} />
@@ -241,6 +292,16 @@ const AssignedPoliciesTable = ({ assignedPolicies, reload }) => {
                         setFormData={setSelectedPolicyForEdit}
                         onSubmit={handleEditPolicySubmit}
                         onClose={handleClosePolicyForEdit}
+                    />
+                }
+
+                {isUploadedPolicySelectedForEdit &&
+                    <UploadedPolicyForm
+                        formData={selectedUploadedPolicyForEdit}
+                        handleFormDataChange={handleFormDataChange}
+                        onSubmit={handleEditUploadedPolicySubmit}
+                        onDocumentUpload={handleDocumentUpload}
+                        onClose={handleCloseUploadedPolicyForEdit}
                     />
                 }
             </div>

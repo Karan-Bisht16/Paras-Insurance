@@ -64,7 +64,8 @@ const App = () => {
                 />
                 <Route
                     path='/auth'
-                    element={<GuestRoute Component={Authentication} user={condenseClientInfo} />}
+                    element={<Authentication />}
+                    // element={<GuestRoute Component={Authentication} user={condenseClientInfo} />}
                 />
                 <Route
                     path='/insuranceForm'

@@ -38,7 +38,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, modalText, showLinearProgress, m
                     </div>
                     <button
                         type="submit" disabled={modalFieldIsDisabled}
-                        className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        className="w-full bg-gray-900 hover:opacity-95 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     >
                         Send reset password link
                     </button>

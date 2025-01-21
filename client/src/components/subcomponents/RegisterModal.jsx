@@ -11,8 +11,11 @@ const RegisterModal = ({ loginOrRegister, isOpen, onClose, onSubmit, error }) =>
     if (!isOpen) return null;
 
     return (
-        <div className='fixed !z-[1000] inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center'>
-            <div className='bg-white p-8 pb-10 rounded-lg shadow-xl w-96 sm:w-[400px]'>
+        <div className='fixed !z-[1000] inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center' onClick={onClose}>
+            <div
+                onClick={(event) => event.stopPropagation()}
+                className='bg-white p-8 pb-10 rounded-lg shadow-xl w-96 sm:w-[400px]'
+            >
                 {loginOrRegister === 'Login' ?
                     <h2 className='text-xl text-center font-normal mb-4'>Enter your password to continue</h2>
                     :
@@ -41,7 +44,7 @@ const RegisterModal = ({ loginOrRegister, isOpen, onClose, onSubmit, error }) =>
                         </button>
                         <button
                             type='submit'
-                            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline'
+                            className='bg-gray-900 hover:opacity-95 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline'
                         >
                             {loginOrRegister}
                         </button>

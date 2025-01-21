@@ -72,11 +72,12 @@ const UnassignedSipsTable = ({ unassignedSips, onAssignSip, reload, isGeneralIns
             if (!isGeneralInsurance) {
                 await updateSip({ formData, removedFiles, selectedSipId });
                 await uploadSipMedia({ ...files, sipId: selectedSipId });
+                setSnackbarValue({ message: 'SIP details updated successfully!', status: 'success' });
             } else {
                 await updateGeneralInsurance({ formData, removedFiles, selectedGeneralInsuranceId: selectedSipId, policyType });
                 await uploadGeneralInsuranceMedia({ ...files, generalInsuranceId: selectedSipId });
+                setSnackbarValue({ message: 'General insurance details updated successfully!', status: 'success' });
             }
-            setSnackbarValue({ message: 'SIP details updated successfully!', status: 'success' });
             setSnackbarState(true);
             reload();
             return false;
@@ -167,19 +168,19 @@ const UnassignedSipsTable = ({ unassignedSips, onAssignSip, reload, isGeneralIns
                                 }
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                                     <button className="text-gray-600 hover:text-blue-900 mr-2">
-                                        <Tooltip title='View SIP details'>
+                                        <Tooltip title={`View ${isGeneralInsurance ? 'general Insurance' : 'SIP'} details`}>
                                             <Visibility onClick={() => handleSelectSip(sip)} />
                                         </Tooltip>
                                     </button>
                                     <button className="p-1 border border-gray-300 rounded-md shadow-sm text-blue-600 hover:text-blue-900 ml-1 focus:outline-none">
-                                        <Tooltip title='View policy details'>
+                                        <Tooltip title={`Edit ${isGeneralInsurance ? 'general Insurance' : 'SIP'} details`}>
                                             <Edit onClick={() => handleOpenSipForEdit(sip)} />
                                         </Tooltip>
                                     </button>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                                     <button className="text-green-600 hover:text-green-900">
-                                        <Tooltip title='Assign SIP'>
+                                        <Tooltip title={`Assign ${isGeneralInsurance ? 'General Insurance' : 'SIP'}`}>
                                             <Checkbox onChange={() => onAssignSip(sip._id)} checked={false} />
                                         </Tooltip>
                                     </button>
@@ -225,7 +226,7 @@ const UnassignedSipsTable = ({ unassignedSips, onAssignSip, reload, isGeneralIns
                         onSubmit={handleEditSipSubmit}
                         includePolicyType={isGeneralInsurance}
                         initialPolicyType={isGeneralInsurance ? selectedGeneralInsurancePolicyTypeForEdit : ''}
-                        label={isGeneralInsurance ? `Update General Insurance (${selectedSip?.policyType})` : 'Update SIP'}
+                        label={isGeneralInsurance ? `Update General Insurance (${selectedGeneralInsurancePolicyTypeForEdit})` : 'Update SIP'}
                         excludeEmployementDetails={true}
                     />
                 }

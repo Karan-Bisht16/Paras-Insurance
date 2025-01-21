@@ -9,11 +9,12 @@ import { Parser } from '@json2csv/plainjs';
 // importing models
 import SIP from '../models/sip.model.js';
 import Client from '../models/client.model.js';
+import Callback from '../models/callback.model.js';
 import Employee from '../models/employee.model.js';
 import ClientPolicy from '../models/clientPolicy.model.js';
 import GeneralInsurance from '../models/generalInsurance.model.js';
 // importing helper functions
-import { condenseClientInfo, cookiesOptions, generateAccessAndRefreshTokens, transporter } from '../utils/helperFunctions.js';
+import { condenseClientInfo, cookiesOptions, generateAccessAndRefreshTokens, normalizePhoneNumber, transporter } from '../utils/helperFunctions.js';
 
 const __dirname = path.resolve();
 
@@ -870,13 +871,13 @@ const requestCallbackViaWhatsApp = async (req, res) => {
             if (clients.length === 0) {
                 const newClient = await Client.create({
                     userType: 'Lead',
-                    password: `${name}@${phone}`,
+                    password: `${name}@${normalizePhoneNumber(phone)}`,
                     personalDetails: {
                         firstName: name,
                         lastName: '',
                         contact: {
                             email: '',
-                            phone: phone
+                            phone: normalizePhoneNumber(phone)
                         },
                     },
                     notes: {
@@ -933,28 +934,40 @@ const requestCallbackViaWhatsApp = async (req, res) => {
 // working
 const requestCallbackViaWebsite = async (req, res) => {
     try {
-        const clientId = req.client._id;
-        const { message } = req.body?.formData;
+        const { formData } = req.body;
+        const { clientId, message } = formData;
+        if (clientId) {
+            const updatedClient = await Client.findByIdAndUpdate(
+                clientId,
+                {
+                    $push: {
+                        notes: { message: message || '', requestCallback: true, source: 'Website' },
+                        interactionHistory: {
+                            type: 'Callback Requested',
+                            description: `Client has requested a callback.`,
+                        },
+                    }
+                },
+                { new: true }
+            );
 
-        const updatedClient = await Client.findByIdAndUpdate(
-            clientId,
-            {
-                $push: {
-                    notes: { message: message || '', requestCallback: true, source: 'Website' },
-                    interactionHistory: {
-                        type: 'Callback Requested',
-                        description: `Client has requested a callback.`,
-                    },
-                }
-            },
-            { new: true }
-        );
+            if (!updatedClient) return res.status(404).json({ message: 'Client not found.' });
 
-        if (!updatedClient) return res.status(404).json({ message: 'Client not found.' });
+            const name = `${updatedClient.personalDetails.firstName} ${updatedClient.personalDetails.lastName}`;
+            const phone = updatedClient?.personalDetails?.contact?.phone;
+            await sendRequestCallback(name, phone, message, 'Website');
+        } else {
+            await Callback.create({
+                clientName: `${formData.firstName} ${formData.lastName}`,
+                email: formData.email,
+                phone: formData.phone,
+                message: formData.message,
+            });
 
-        const name = `${updatedClient.personalDetails.firstName} ${updatedClient.personalDetails.lastName}`;
-        const phone = updatedClient?.personalDetails?.contact?.phone;
-        await sendRequestCallback(name, phone, message, 'Website');
+            const name = `${formData.firstName} ${formData.lastName}`;
+            const phone = formData.phone;
+            await sendRequestCallback(name, phone, message, 'Website');
+        }
 
         res.sendStatus(200);
     } catch (error) {
@@ -1002,7 +1015,13 @@ const fetchAllRequestCallbacks = async (req, res) => {
             }
         ]);
 
-        res.status(200).json(results);
+        const callbacks = await Callback.find({ requestCallback: true });
+        const updatedCallbacks = callbacks.map(callback => ({
+            ...callback.toObject(),
+            noAccount: true
+        }));
+
+        res.status(200).json([...results, ...updatedCallbacks]);
     } catch (error) {
         console.error(error);
         res.status(503).json({ message: 'Network error. Try again' });
@@ -1016,12 +1035,21 @@ const resolveRequestCallback = async (req, res) => {
         if (!isCurrentClientEmployee) return res.status(400).json({ message: 'Unauthorised access' });
 
         const { clientId, notesId } = req.query;
-        const updatedClient = await Client.updateOne(
-            { _id: clientId, "notes._id": notesId },
-            { $set: { "notes.$.requestCallback": false } }
-        );
+        if (notesId) {
+            const updatedClient = await Client.updateOne(
+                { _id: clientId, "notes._id": notesId },
+                { $set: { "notes.$.requestCallback": false } }
+            );
 
-        if (updatedClient.modifiedCount === 0) return res.status(404).json({ message: 'Note not found or already resolved' });
+            if (updatedClient.modifiedCount === 0) return res.status(404).json({ message: 'Note not found or already resolved' });
+        } else {
+            const updatedCallback = await Callback.updateOne(
+                { _id: clientId },
+                { $set: { "requestCallback": false } }
+            );
+
+            if (updatedCallback.modifiedCount === 0) return res.status(404).json({ message: 'Note not found or already resolved' });
+        }
 
         res.sendStatus(200);
     } catch (error) {

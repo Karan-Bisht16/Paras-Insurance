@@ -142,7 +142,7 @@ const ClientTable = ({ clients, reload }) => {
                         <option value="MALE">Male</option>
                         <option value="FEMALE">Female</option>
                     </select>
-                    <FilterAltOutlined className="!size-4" />
+                    <FilterAltOutlined />
                     <Button
                         onClick={handleOpenAddClientModal}
                         className="!text-white !bg-gray-900 !flex !justify-center !items-center !gap-2 hover:opacity-95"

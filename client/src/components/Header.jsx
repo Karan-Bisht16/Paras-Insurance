@@ -1,12 +1,13 @@
 import { useContext, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, Button, CircularProgress, Divider, IconButton, ListItemIcon, Menu, MenuItem, Tooltip } from '@mui/material';
-import { AccountCircle, Assignment, Logout, Password } from '@mui/icons-material';
+import { AccountCircle, Assignment, Logout, Password, Upload } from '@mui/icons-material';
 // importing api end-points
-import { forgotPassword, logout } from '../api';
+import { forgotPassword, logout, uploadExisitingClientPolicy, uploadExisitingClientPolicyMedia } from '../api';
 // importing contexts
 import { ClientContext } from '../contexts/Client.context';
 import { SnackBarContext } from '../contexts/SnackBar.context';
+import AssignPolicyModal from './subcomponents/AssignPolicyModal';
 
 const Header = () => {
     const navigate = useNavigate();
@@ -41,11 +42,56 @@ const Header = () => {
     const [resetPasswordRequested, setResetPasswordRequested] = useState(false);
     const handleResetPassword = async () => {
         setResetPasswordRequested(true);
-        const { data } = await forgotPassword({ email: condenseClientInfo.email });
+        await forgotPassword({ email: condenseClientInfo.email });
         setSnackbarValue({ message: `Reset password link to ${condenseClientInfo.email}`, status: 'success' });
         setSnackbarState(true);
         handleMenuClose();
         setResetPasswordRequested(false);
+    }
+
+    const [error, setError] = useState('');
+    const [formData, setFormData] = useState({
+        firstName: condenseClientInfo?.firstName,
+        lastName: condenseClientInfo?.lastName,
+        email: condenseClientInfo?.email,
+        phone: condenseClientInfo?.phone,
+        expiryDate: '',
+        policyNo: ''
+    });
+    const handleFormDataChange = (event) => {
+        const { name, value } = event.target;
+        setFormData((prevFormData) => { return { ...prevFormData, [name]: value } });
+    }
+    const [policyDocument, setPolicyDocument] = useState('');
+    const handleDocumentUpload = (event) => {
+        const file = event.target.files[0];
+        setPolicyDocument(prevFiles => {
+            return { ...prevFiles, 'policyDocument': file }
+        });
+    }
+
+    const [isAssignPolicyModalOpen, setIsAssignPolicyModalOpen] = useState(false);
+    const openAssignPolicyModal = () => {
+        handleMenuClose();
+        setIsAssignPolicyModalOpen(true);
+    }
+    const closeAssignPolicyModal = () => {
+        setIsAssignPolicyModalOpen(false);
+        setPolicyDocument('');
+        setFormData((prevFormData) => { return { ...prevFormData, expiryDate: '', policyNo: '' } });
+    }
+    const handleUploadPolicy = async () => {
+        event.preventDefault();
+        setError('');
+        try {
+            const { data } = await uploadExisitingClientPolicy({ formData });
+            await uploadExisitingClientPolicyMedia({ ...policyDocument, clientPolicyId: data?._id })
+            setSnackbarValue({ message: 'Policy Uploaded!', status: 'success' });
+            setSnackbarState(true);
+            closeAssignPolicyModal();
+        } catch (error) {
+            setError(error?.response?.data?.message);
+        }
     }
 
     const handleLogout = async () => {
@@ -152,6 +198,12 @@ const Header = () => {
                                     </ListItemIcon>
                                     My Policies & SIP
                                 </MenuItem>
+                                <MenuItem onClick={openAssignPolicyModal}>
+                                    <ListItemIcon>
+                                        <Upload fontSize='small' className='text-gray-900' />
+                                    </ListItemIcon>
+                                    Upload Existing Policy
+                                </MenuItem>
                                 <MenuItem onClick={handleResetPassword}>
                                     <ListItemIcon>
                                         {resetPasswordRequested ?
@@ -178,6 +230,18 @@ const Header = () => {
             </header >
             {resetPasswordRequested &&
                 <div className='fixed !z-[2000] inset-0 bg-black/10'></div>
+            }
+            {isAssignPolicyModalOpen
+                &&
+                <AssignPolicyModal
+                    closeAssignPolicyModal={closeAssignPolicyModal}
+                    onSubmit={handleUploadPolicy}
+                    formData={formData}
+                    onFormDataChange={handleFormDataChange}
+                    onDocumentUpload={handleDocumentUpload}
+                    tabIndex={3}
+                    error={error}
+                />
             }
         </>
     );
