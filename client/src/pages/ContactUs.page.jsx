@@ -171,14 +171,7 @@ const ContactForm = () => {
             >
               <Facebook />
             </a>
-            <a
-              href="https://www.twitter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-white hover:text-gray-300 transition-colors duration-300"
-            >
-              <Twitter />
-            </a>
+            
           </div>
         </div>
       </div>

@@ -258,7 +258,7 @@ const SIP = () => {
                                     <Button
                                         variant="contained"
                                         onClick={openUpdateProfile}
-                                        className="!bg-gray-900 !text-white hover:!bg-gray-800 !px-6"
+                                        className="!bg-[#01978B] !text-white hover:!bg-white hover:!text-[#01978B] !px-6"
                                         style={{
                                             marginLeft: "auto",
                                             marginRight: "40%",
