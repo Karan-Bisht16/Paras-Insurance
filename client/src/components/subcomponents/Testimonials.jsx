@@ -6,7 +6,7 @@ const Testimonials = () => {
     const reviews = content['reviews'];
 
     return (
-        <section className='py-12 md:py-16 bg-gray-100'>
+        <section className='py-12 md:py-16 bg-[#e1faf8]'>
             <div className='px-4 md:px-20 lg:px-40'>
                 <h2 className='text-3xl font-bold text-left mb-8'>What Our Clients Are Saying</h2>
                 <div className='grid gap-8 md:grid-cols-3'>

@@ -121,7 +121,7 @@ const ClientProfile = () => {
                         :
                         <div className='py-12 sm:px-16 bg-white'>
                             <div className="absolute inset-0">
-                                <div className="absolute inset-0 bg-[#111827]"></div>
+                                <div className="absolute inset-0 bg-[#01978B]"></div>
                                 <div
                                     className="absolute inset-0 bg-white"
                                     style={{ clipPath: 'polygon(0 65%, 100% 35%, 100% 100%, 0% 100%)' }}

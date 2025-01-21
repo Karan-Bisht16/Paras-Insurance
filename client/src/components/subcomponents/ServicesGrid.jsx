@@ -36,7 +36,7 @@ const ServicesGrid = () => {
     tailChase.register();
 
     return (
-        <section id='productsAndServices' className='py-8 md:py-12 px-8 bg-gray-100'>
+        <section id='productsAndServices' className='py-8 md:py-12 px-8 bg-[#e1faf8]'>
             <div className='px-4 md:px-6'>
                 <h2 className='text-3xl font-bold text-center mb-8'>Our Products & Services</h2>
                 <div className='flex justify-center'>

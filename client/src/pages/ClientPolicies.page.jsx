@@ -218,12 +218,12 @@ const ClientPolicies = () => {
                                 colors='primary:#111827,secondary:#111827'
                                 style={{ width: '250px', height: '250px' }}
                             />
-                            <p className='text-3xl font-semibold text-gray-900'>No client found</p>
+                            <p className='text-3xl font-semibold bg-[#01978B]'>No client found</p>
                         </div>
                         :
                         <div className='pt-8 pb-16 sm:px-16 bg-white'>
                             <div className="absolute inset-0">
-                                <div className="absolute inset-0 bg-[#111827]"></div>
+                                <div className="absolute inset-0 bg-[#01978B]"></div>
                                 <div
                                     className="absolute inset-0 bg-white"
                                     style={{ clipPath: 'polygon(0 65%, 100% 35%, 100% 100%, 0% 100%)' }}
@@ -285,7 +285,7 @@ const ClientPolicies = () => {
                                                                         </div>
                                                                         <Button
                                                                             onClick={() => selectPolicy({ data: policy?.data, format: policy?.policyDetails, stage: policy?.stage })}
-                                                                            className='!flex !gap-2 !items-center !justify-center float-right !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                            className='!flex !gap-2 !items-center !justify-center float-right !text-white !bg-[#01978B] py-1 px-2 rounded-sm hover:opacity-95'
                                                                         >
                                                                             Details
                                                                             <Info className='!size-4' />
@@ -293,7 +293,7 @@ const ClientPolicies = () => {
                                                                         {policy?.combinedQuotationDetails && Object.keys(policy?.combinedQuotationDetails).length !== 0 && policy?.combinedQuotationDetails?.status !== 'Pending' &&
                                                                             <Button
                                                                                 onClick={() => selectCombinedQuotation(policy?.combinedQuotationDetails)}
-                                                                                className='!flex !gap-2 !items-center !justify-center float-right !mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                                className='!flex !gap-2 !items-center !justify-center float-right !mr-4 !text-white !bg-[#01978B] py-1 px-2 rounded-sm hover:opacity-95'
                                                                             >
                                                                                 Quotations
                                                                                 <List className='!size-4' />
@@ -323,7 +323,7 @@ const ClientPolicies = () => {
                                                                         <div className='flex justify-end'>
                                                                             <Button
                                                                                 onClick={() => selectGeneralInsurance(generalInsurance)}
-                                                                                className='!flex !gap-2 !items-center !justify-center !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                                className='!flex !gap-2 !items-center !justify-center !text-white !bg-[#01978B] py-1 px-2 rounded-sm hover:opacity-95'
                                                                             >
                                                                                 Details
                                                                                 <Info className='!size-4' />
@@ -376,14 +376,14 @@ const ClientPolicies = () => {
                                                                                 policyNo: policy?.policyNo,
                                                                                 policyDocumentURL: policy?.policyDocumentURL,
                                                                             })}
-                                                                            className='!ml-2 !flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                            className='!ml-2 !flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-[#01978B] py-1 px-2 rounded-sm hover:opacity-95'
                                                                         >
                                                                             Details
                                                                             <Info className='!size-4' />
                                                                         </Button>
                                                                         <Button
                                                                             onClick={() => handleOpenInNew(policy?.policyDocumentURL)}
-                                                                            className='!flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                            className='!flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-[#01978B] py-1 px-2 rounded-sm hover:opacity-95'
                                                                         >
                                                                             Policy Document
                                                                             <Assignment className='!size-4' />
@@ -412,14 +412,14 @@ const ClientPolicies = () => {
                                                                         <div className='flex gap-2 justify-end'>
                                                                             <Button
                                                                                 onClick={() => handleOpenInNew(generalInsurance?.generalInsuranceDocumentURL)}
-                                                                                className='!flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                                className='!flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-[#01978B] py-1 px-2 rounded-sm hover:opacity-95'
                                                                             >
                                                                                 General Insurance Document
                                                                                 <Assignment className='!size-4' />
                                                                             </Button>
                                                                             <Button
                                                                                 onClick={() => selectGeneralInsurance(generalInsurance)}
-                                                                                className='!flex !gap-2 !items-center !justify-center !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                                className='!flex !gap-2 !items-center !justify-center !text-white !bg-[#01978B] py-1 px-2 rounded-sm hover:opacity-95'
                                                                             >
                                                                                 Details
                                                                                 <Info className='!size-4' />
@@ -461,7 +461,7 @@ const ClientPolicies = () => {
                                                                 <div className='flex justify-end'>
                                                                     <Button
                                                                         onClick={() => selectSip(sip)}
-                                                                        className='!flex !gap-2 !items-center !justify-center !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                        className='!flex !gap-2 !items-center !justify-center !text-white !bg-[#01978B] py-1 px-2 rounded-sm hover:opacity-95'
                                                                     >
                                                                         Details
                                                                         <Info className='!size-4' />
@@ -502,14 +502,14 @@ const ClientPolicies = () => {
                                                                 <div className='flex gap-2 justify-end'>
                                                                     <Button
                                                                         onClick={() => handleOpenInNew(sip?.sipDocumentURL)}
-                                                                        className='!flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                        className='!flex !gap-2 !items-center !justify-center float-right mr-4 !text-white !bg-[#01978B] py-1 px-2 rounded-sm hover:opacity-95'
                                                                     >
                                                                         SIP Document
                                                                         <Assignment className='!size-4' />
                                                                     </Button>
                                                                     <Button
                                                                         onClick={() => selectSip(sip)}
-                                                                        className='!flex !gap-2 !items-center !justify-center !text-white !bg-gray-900 py-1 px-2 rounded-sm hover:opacity-95'
+                                                                        className='!flex !gap-2 !items-center !justify-center !text-white !bg-[#01978B] py-1 px-2 rounded-sm hover:opacity-95'
                                                                     >
                                                                         Details
                                                                         <Info className='!size-4' />
@@ -585,13 +585,13 @@ const ClientPolicies = () => {
                                             <Button
                                                 type='button'
                                                 onClick={handleDownloadExcel}
-                                                className='!flex !items-center !gap-2 !bg-gray-900 !text-white float-right'
+                                                className='!flex !items-center !gap-2 !bg-[#01978B] !text-white float-right'
                                             >
                                                 Download Excel
                                                 <Download className='!size-4' />
                                             </Button>
                                             <br />
-                                            <ScrollArea className='w-full mt-6 rounded-lg border-2 border-gray-900'>
+                                            <ScrollArea className='w-full mt-6 rounded-lg border-2 border-[#01978B]'>
                                                 <div>
                                                     <Spreadsheet data={selectedCombinedQuotation} />
                                                 </div>
