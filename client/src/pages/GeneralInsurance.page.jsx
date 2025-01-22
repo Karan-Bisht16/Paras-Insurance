@@ -198,7 +198,7 @@ const GeneralInsurance = () => {
                             colors='primary:#111827,secondary:#111827'
                             style={{ width: '250px', height: '250px' }}
                         />
-                        <p className='text-3xl font-semibold text-gray-900'>Unauthorised action performed</p>
+                        <p className='text-3xl font-semibold text-[#01978B]'>Unauthorised action performed</p>
                     </div>
                     :
                     !isClientDataFound ?
@@ -209,12 +209,12 @@ const GeneralInsurance = () => {
                                 colors='primary:#111827,secondary:#111827'
                                 style={{ width: '250px', height: '250px' }}
                             />
-                            <p className='text-3xl font-semibold text-gray-900'>No client found</p>
+                            <p className='text-3xl font-semibold text-[#01978B]'>No client found</p>
                         </div>
                         :
                         <div className='h-[100vh] relative bg-white overflow-hidden'>
                             <div className="absolute inset-0">
-                                <div className="absolute inset-0 bg-[#111827]"></div>
+                                <div className="absolute inset-0 bg-[#01978B]"></div>
                                 <div
                                     className="absolute inset-0 bg-white"
                                     style={{ clipPath: 'polygon(0 65%, 100% 35%, 100% 100%, 0% 100%)' }}

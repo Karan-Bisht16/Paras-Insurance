@@ -251,7 +251,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                     </div>
                                 </div>
                                 <div className="mt-2">
-                                    <h4 className="block text-sm font-medium text-gray-700 mb-2">Nominee Details</h4>
+                                    <h4 className="block text-sm font-medium text-[#01978B] mb-2">Nominee Details</h4>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                         <TextField
                                             label="Nominee Name" type="text" name="name"
@@ -295,7 +295,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                                     <Link
                                                         to={formData.financialDetails?.panCardURL}
                                                         target="_blank" rel="noopener noreferrer"
-                                                        className='w-72 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-gray-900'
+                                                        className='w-72 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-[#01978B]'
                                                     >
                                                         PAN Card
                                                         <OpenInNew className='!size-4' />
@@ -318,7 +318,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                                     />
                                                     <div
                                                         onClick={handleFileUploadPanCard}
-                                                        className='w-48 h-8 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-gray-900'
+                                                        className='w-48 h-8 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-[#01978B]'
                                                     >
                                                         <span className='overflow-hidden whitespace-nowrap text-ellipsis'>
                                                             {files.panCard ? files.panCard?.name : 'Upload PAN Card'}
@@ -340,7 +340,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                                     <Link
                                                         to={formData.financialDetails?.aadhaarURL}
                                                         target="_blank" rel="noopener noreferrer"
-                                                        className='w-72 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-gray-900'
+                                                        className='w-72 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-[#01978B]'
                                                     >
                                                         Aadhaar
                                                         <OpenInNew className='!size-4' />
@@ -363,7 +363,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                                     />
                                                     <div
                                                         onClick={handleFileUploadAadhaar}
-                                                        className='w-48 h-8 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-gray-900'
+                                                        className='w-48 h-8 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-[#01978B]'
                                                     >
                                                         <span className='overflow-hidden whitespace-nowrap text-ellipsis'>
                                                             {files.aadhaar ? files.aadhaar?.name : 'Upload Aadhaar'}
@@ -405,7 +405,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                                 <Link
                                                     to={formData.financialDetails?.accountDetails?.cancelledChequeURL}
                                                     target="_blank" rel="noopener noreferrer"
-                                                    className='w-72 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-gray-900'
+                                                    className='w-72 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-[#01978B]'
                                                 >
                                                     Cancelled Cheque
                                                     <OpenInNew className='!size-4' />
@@ -428,7 +428,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                                 />
                                                 <div
                                                     onClick={handleFileUploadCancelledCheque}
-                                                    className='w-full h-8 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-gray-900'
+                                                    className='w-full h-8 flex gap-2 justify-center items-center py-1 px-2 cursor-pointer rounded-md text-white bg-[#01978B]'
                                                 >
                                                     <span className='overflow-hidden whitespace-nowrap text-ellipsis'>
                                                         {files.cancelledCheque ? files.cancelledCheque?.name : 'Upload Cancelled Cheque Image'}
@@ -470,7 +470,7 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                     <Button
                                         variant="contained"
                                         onClick={handleNext}
-                                        className='!bg-gray-900'
+                                        className='!bg-[#01978B]'
                                     >Next</Button>
                                 </div>
                             } {(activeStep === 1) &&
@@ -479,13 +479,13 @@ const UpdateProfileForm = ({ clientData, closeUpdateProfile, isNotClosable, onSu
                                         <Button
                                             variant="outlined"
                                             onClick={handleBack}
-                                            className='!text-gray-900'
+                                            className='!text-[#01978B]'
                                         >Back</Button>
                                     </div>
                                     <div className='float-right'>
                                         <Button
                                             variant="contained" type='submit'
-                                            className='!bg-gray-900'
+                                            className='!bg-[#01978B]'
                                         >{label}</Button>
                                     </div>
                                 </>
