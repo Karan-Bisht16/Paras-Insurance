@@ -256,7 +256,7 @@ const InsuranceForm = () => {
                 :
                 <div className='min-h-[85vh] bg-white flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8'>
                     <div className="absolute inset-0">
-                        <div className="absolute inset-0 bg-[#111827]"></div>
+                        <div className="absolute inset-0 bg-[#01978B]"></div>
                         <div
                             className="absolute inset-0 bg-white"
                             style={{ clipPath: 'polygon(0 65%, 100% 35%, 100% 100%, 0% 100%)' }}
@@ -310,17 +310,17 @@ const InsuranceForm = () => {
                             />
                             <div className='flex justify-between mt-6'>
                                 {currentSection > 0 && (
-                                    <Button type='button' onClick={handlePrevious} className='!text-gray-900 !bg-gray-300 !hover:bg-gray-400'>
+                                    <Button type='button' onClick={handlePrevious} className='!text-[#01978B] !bg-gray-300 !hover:bg-gray-400'>
                                         Previous
                                     </Button>
                                 )}
                                 {currentSection < formFields.sections.length - 1 && (
-                                    <Button type='button' onClick={handleNext} className='!text-white !bg-gray-900 !hover:opacity-95'>
+                                    <Button type='button' onClick={handleNext} className='!text-white !bg-[#01978B] !hover:opacity-95'>
                                         Next
                                     </Button>
                                 )}
                                 {currentSection === formFields.sections.length - 1 && (
-                                    <Button type='submit' className='!text-white !bg-gray-900 !hover:opacity-95'>
+                                    <Button type='submit' className='!text-white !bg-[#01978B] !hover:opacity-95'>
                                         {formFields.submitButtonLabel}
                                     </Button>
                                 )}

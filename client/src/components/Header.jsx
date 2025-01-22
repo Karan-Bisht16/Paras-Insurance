@@ -167,7 +167,7 @@ const Header = () => {
               )) && (
               <>
                 <Link to="/sip" className="text-sm hover:opacity-95">
-                  Start a SIP
+                  Invest in SIP
                 </Link>
                 <Link to="/aboutUs" className="text-sm hover:opacity-95">
                   About Us

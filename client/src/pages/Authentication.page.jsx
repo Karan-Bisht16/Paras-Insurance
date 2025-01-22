@@ -131,7 +131,7 @@ const Authentication = () => {
         <div>
             <div className={`bg-gray-100 flex flex-col justify-center py-4 sm:px-6 lg:px-8 ${!isRegister && 'md:py-24'}`}>
                 <div className="absolute inset-0">
-                    <div className="absolute inset-0 bg-[#111827]"></div>
+                    <div className="absolute inset-0 bg-[#01978B]"></div>
                     <div
                         className="absolute inset-0 bg-white"
                         style={{ clipPath: 'polygon(0 65%, 100% 35%, 100% 100%, 0% 100%)' }}
@@ -286,7 +286,7 @@ const Authentication = () => {
                                         </div>
                                         <button
                                             type='submit'
-                                            className='w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                                            className='w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#01978B] hover:bg-white hover:text-[#01978B] hover:border-[#01978B] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
                                         >
                                             Login
                                         </button>

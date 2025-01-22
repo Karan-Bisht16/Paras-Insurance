@@ -190,7 +190,7 @@ const AboutUs = () => {
                 <div className="flex justify-center">
                   <Link
                     to="/contactUs"
-                    className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#01978B] hover:bg-[#01978B]/90 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#01978B]"
+                    className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#01978B] hover:bg-white hover:text-[#01978B] hover:border-[#01978B] transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#01978B]"
                   >
                     Get Started Today
                   </Link>
