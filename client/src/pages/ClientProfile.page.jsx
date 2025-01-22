@@ -361,16 +361,7 @@ const ClientProfile = () => {
                                         </div>
                                     </AccordionDetails>
                                 </Accordion>
-                                <div className='my-8 ml-6'>
-                                    <Button
-                                        variant='contained'
-                                        onClick={handleDelete}
-                                        className='flex items-center gap-2.5 !bg-red-600 hover:opacity-95'
-                                    >
-                                        Delete Profile
-                                        <Delete className='!size-4' />
-                                    </Button>
-                                </div>
+                              
                             </div>
                             <div className='relative bg-white/95 py-4 px-6 rounded-xl shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
                                 <h1 className='text-3xl text-left font-semibold'>
