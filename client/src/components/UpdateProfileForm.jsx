@@ -243,7 +243,7 @@ const UpdateProfileForm = ({
               <Fade in={activeStep === 0} timeout={500} style={{ display: activeStep === 0 ? "block" : "none" }}>
                 <div>
                   <section className="mb-4">
-                    <h3 className="block text-sm font-medium text-gray-700 mb-2">Personal Details</h3>
+                    <h3 className="block text-sm font-medium text-[#01978B] mb-2">Personal Details</h3>
                     <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-4"} gap-2`}>
                       <TextField
                         label="First Name"
@@ -302,7 +302,7 @@ const UpdateProfileForm = ({
                       />
                     </div>
                     <div className="mt-2">
-                      <h4 className="block text-sm font-medium text-gray-700 mb-2">Residence Details</h4>
+                      <h4 className="block text-sm font-medium text-[#01978B] mb-2">Residence Details</h4>
                       <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-5"} gap-4`}>
                         <TextField
                           label="Street"
