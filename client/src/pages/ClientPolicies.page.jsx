@@ -246,7 +246,7 @@ const ClientPolicies = () => {
                             </div>
                             <div className='pb-4 rounded-xl relative bg-white/95 shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
                                 <Tabs
-                                    value={tabIndex} onChange={handleTabIndexChange} centered
+                                    value={tabIndex} onChange={handleTabIndexChange} variant="scrollable"
                                     scrollButtons="auto" TabIndicatorProps={{ style: { background: "#111827" } }}
                                 >
                                     <Tab label={`Policies Interested In (${clientPolicies.filter(policy => policy.stage === 'Interested').length + clientGeneralInsurances.filter(generalInsurance => generalInsurance.stage === 'Interested').length})`} className='!px-8 !py-4 !text-gray-900' />

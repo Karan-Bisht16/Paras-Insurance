@@ -13,7 +13,7 @@ import {
   useMediaQuery,
 } from "@mui/material"
 import { Close, Delete, ExpandMore, OpenInNew, Upload } from "@mui/icons-material"
-import { styled } from "@mui/system"
+import { maxHeight, styled } from "@mui/system"
 // importing api end-points
 import { fetchEveryPolicyId } from "../api"
 
@@ -24,6 +24,8 @@ const FormContainer = styled("div")(({ theme }) => ({
   padding: theme.spacing(2),
   [theme.breakpoints.down("sm")]: {
     maxWidth: "95vw",
+    maxHeight:"65vh",
+    overflow:"scroll"
   },
   transition: "all 0.3s ease-in-out",
 }))
