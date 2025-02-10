@@ -11,12 +11,12 @@ const menuItems = [
 
 const Sidebar = ({ isCollapsed, toggleSidebar, activeSection, setActiveSection }) => {
     return (
-        <div className={`${isCollapsed ? 'w-14' : 'w-64'} fixed left-0 top-0 z-[1000] h-screen bg-gray-900 text-white transition-none`}>
+        <div className={`${isCollapsed ? 'w-14' : 'w-64'} fixed left-0 top-0 z-[1000] h-screen bg-[#01978B] text-white transition-none`}>
             <div className={`flex items-center ${isCollapsed ? 'pl-0 justify-center' : 'pl-4 justify-between'}  pt-3 pb-2.5`}>
                 {!isCollapsed && <span className="ml-4 text-xl font-semibold">Paaras Financials</span>}
                 <button
                     onClick={toggleSidebar}
-                    className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+                    className="p-2 rounded-lg hover:bg-[#004B45] transition-colors"
                 >
                     {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
                 </button>
@@ -29,7 +29,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar, activeSection, setActiveSection }
                         <button
                             key={item.id} type='button'
                             onClick={() => setActiveSection(item.id)}
-                            className={`w-full flex items-center p-4 hover:bg-gray-800 transition-colors ${activeSection === item.id ? 'bg-blue-600' : ''}`}
+                            className={`w-full flex items-center p-4 hover:bg-[#004B45] transition-colors ${activeSection === item.id ? 'bg-[#33aba2]' : ''}`}
                         >
                             <Icon />
                             {!isCollapsed && <span className="ml-4">{item.label}</span>}

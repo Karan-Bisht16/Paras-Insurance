@@ -33,9 +33,16 @@ const Footer = () => {
                     </div>
                 </div>
                 <div className='mt-8 pt-4 border-t text-center border-gray-700'>
-                    <p className='text-black text-sm'>
-                        Designed and built with all the love in the world by the RASH Technologies team.
+                    <p className="text-black text-sm font-semibold">
+                        Designed and built with all the love in the world by the
+                        <a
+                            href='https://www.rashtechnologies.com/contact-us/' target='blank'
+                            className="bg-[#01978B] text-white px-1 rounded ml-1 hover:underline"
+                        >
+                            RASH Technologies
+                        </a>team.
                     </p>
+
                 </div>
             </div>
         </footer>

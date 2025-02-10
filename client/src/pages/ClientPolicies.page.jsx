@@ -354,7 +354,11 @@ const ClientPolicies = () => {
                                                                 policy.stage === 'Assigned' &&
                                                                 <div key={policy?._id} className='bg-white rounded-xl mb-4 px-4 shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px]'>
                                                                     <div className='pt-3 pb-12 px-2'>
-                                                                        <h3 className='text-xl font-semibold'>{policy?.policyDetails?.policyName}</h3>
+                                                                        {policy?.policyId === '6777932ef2013d3cfcc27347' ?
+                                                                            <h3 className='text-xl font-semibold'>Policy No: {policy?.policyNo}</h3>
+                                                                            :
+                                                                            <h3 className='text-xl font-semibold'>{policy?.policyDetails?.policyName}</h3>
+                                                                        }
                                                                         <div className='flex gap-1.5 items-center mt-1 mb-0.5'>
                                                                             <Person />
                                                                             <span className='text-gray-500'><strong>Applied By:</strong> {policy?.data?.email}</span>

@@ -77,6 +77,10 @@ const clientSchema = new mongoose.Schema({
             enum: ['Male', 'Female', 'Other', ''],
             default: '',
         },
+        avatar: {
+            type: String,
+            default: ''
+        },
         contact: {
             email: {
                 type: String,

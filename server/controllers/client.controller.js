@@ -368,6 +368,22 @@ const updateProfile = async (req, res) => {
     }
 };
 // working
+const uploadProfilePhoto = async (req, res) => {
+    try {
+        const file = req.file;
+        const client = req.client;
+
+        client.personalDetails.avatar = `${process.env.BACK_END_URL}/uploads/${file.filename}`;
+        await client.save();
+        const clientInfo = await condenseClientInfo(req.client);
+
+        res.status(200).json(clientInfo);
+    } catch (error) {
+        console.error(error);
+        res.status(503).json({ message: 'Network error. Try again' })
+    }
+}
+// working
 const uploadProfileMedia = async (req, res) => {
     try {
         const { clientId } = req.body;
@@ -1067,6 +1083,7 @@ export {
     fetchPoliciesData,
     fetchAllClients,
     updateProfile,
+    uploadProfilePhoto,
     uploadProfileMedia,
     logout,
     deleteProfile,

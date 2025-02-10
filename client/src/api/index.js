@@ -12,6 +12,11 @@ export const fetchProfileData = (clientId) => API.get('/client/fetchProfileData'
 export const fetchPoliciesData = (clientId) => API.get('/client/fetchPoliciesData', { params: clientId });
 export const fetchAllClients = () => API.get('/client/fetchAll');
 export const updateProfile = (formData) => API.post('/client/updateProfile', { formData });
+export const uploadProfilePhoto = (media) => API.post('/client/uploadProfilePhoto', media, {
+    headers: {
+        'Content-Type': 'multipart/form-data',
+    }
+});
 export const uploadProfileMedia = (media) => API.post('/client/uploadProfileMedia', media, {
     headers: {
         'Content-Type': 'multipart/form-data',
