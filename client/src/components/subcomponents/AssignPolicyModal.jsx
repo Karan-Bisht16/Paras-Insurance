@@ -1,10 +1,23 @@
+import { useState } from "react";
 import { Button, Divider, TextField } from "@mui/material";
 import { Close } from "@mui/icons-material";
 
 const AssignPolicyModal = ({ closeAssignPolicyModal, onSubmit, formData, onFormDataChange, onDocumentUpload, tabIndex, error }) => {
+    const [submitting, setSubmitting] = useState(false);
+    const handleSubmit = async () => {
+        setSubmitting(true);
+        await onSubmit();
+        setSubmitting(false);
+    }
+
     return (
         <div className='fixed inset-0 bg-black/10 !z-[1000] flex justify-center items-center' onClick={closeAssignPolicyModal}>
+
             <div onClick={(event) => event.stopPropagation()} className='bg-white max-w-[75vw] max-h-[75vh] rounded-lg'>
+                {submitting &&
+                    <div className='fixed inset-0 bg-black/10 !z-[2000] flex justify-center items-center'>
+                    </div>
+                }
                 <div className='px-6 py-4 flex gap-16 justify-between items-center'>
                     <h3 className='text-xl font-semibold'>
                         Enter&nbsp;
@@ -17,7 +30,7 @@ const AssignPolicyModal = ({ closeAssignPolicyModal, onSubmit, formData, onFormD
                     <Close onClick={closeAssignPolicyModal} className='cursor-pointer' />
                 </div>
                 <Divider />
-                <form onSubmit={onSubmit} className='px-6 py-4'>
+                <form onSubmit={handleSubmit} className='px-6 py-4'>
                     {(tabIndex === 3) &&
                         <div className="grid grid-cols-2 gap-2">
                             <TextField
